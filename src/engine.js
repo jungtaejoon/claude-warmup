@@ -63,9 +63,19 @@ export function applyUsageToState(state, usage, now) {
 export async function doPing({ paths, config, state, info, reason }) {
   const cwd = ensureWorkDir(paths);
   const startedAt = Date.now();
-  let res = await ping({ bin: info.path, flags: info.flags, model: config.model, message: config.message, cwd });
+  // Once a minimal ping has worked where the trimmed one failed, keep using the minimal one.
+  const flags = info.minimalPing ? [] : info.flags;
+  let res = await ping({ bin: info.path, flags, model: config.model, message: config.message, cwd });
   if (!res.ok && res.errorKind === 'model_unavailable' && config.model) {
-    res = { ...(await ping({ bin: info.path, flags: info.flags, model: '', message: config.message, cwd })), modelFallbackFrom: config.model };
+    res = { ...(await ping({ bin: info.path, flags, model: '', message: config.message, cwd })), modelFallbackFrom: config.model };
+  }
+  if (!res.ok && res.errorKind === 'unknown' && flags.length) {
+    // A future CLI may change what one of our trimming flags means: retry with none of them.
+    const plain = await ping({ bin: info.path, flags: [], model: res.modelFallbackFrom ? '' : config.model, message: config.message, cwd });
+    if (plain.ok) {
+      info.minimalPing = true;
+      res = { ...plain, modelFallbackFrom: res.modelFallbackFrom };
+    }
   }
   const now = Date.now();
 

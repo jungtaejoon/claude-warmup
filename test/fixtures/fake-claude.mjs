@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Stand-in for the `claude` CLI in tests. It mimics the stream-json shapes of Claude Code 2.1.x.
-// FAKE_CLAUDE_SCENARIO: idle | active | no_report | text_only | logged_out | model_missing | rejected_5h
+// FAKE_CLAUDE_SCENARIO: idle | active | no_report | text_only | logged_out | model_missing | rejected_5h | flags_broken
 // FAKE_CLAUDE_LOG: file that receives one JSON line per invocation (the argv).
 import fs from 'node:fs';
 
@@ -75,6 +75,10 @@ if (scenario === 'logged_out') {
 if (scenario === 'model_missing' && args.includes('--model')) {
   const m = args[args.indexOf('--model') + 1];
   out({ type: 'result', subtype: 'success', is_error: true, num_turns: 1, total_cost_usd: 0, usage: zeroUsage, result: `There's an issue with the selected model (${m}). It may not exist or you may not have access to it.` });
+  process.exit(1);
+}
+if (scenario === 'flags_broken' && args.includes('--tools')) {
+  process.stderr.write("error: option '--tools <tools...>' argument missing\n");
   process.exit(1);
 }
 if (scenario === 'rejected_5h') {

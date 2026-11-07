@@ -110,6 +110,19 @@ test('model not available -> retried with the default model', async (t) => {
   assert.ok(!pings[1].includes('--model'));
 });
 
+test('a CLI that rejects our trimming flags -> plain ping, remembered', async (t) => {
+  const box = sandbox('flags_broken');
+  t.after(() => box.cleanup());
+  const r = await runTick({ paths: box.paths, config: box.config });
+  assert.equal(r.result.ok, true);
+  const pings = box.pings();
+  assert.equal(pings.length, 2);
+  assert.ok(pings[0].includes('--tools'));
+  assert.ok(!pings[1].includes('--tools') && !pings[1].includes('--system-prompt'));
+  assert.equal(pings[1][pings[1].indexOf('--model') + 1], 'haiku', 'still the cheap model');
+  assert.equal(loadState(box.paths).claudeInfo.minimalPing, true);
+});
+
 test('a 5-hour limit hit -> wait for that reset instead of retrying', async (t) => {
   const box = sandbox('rejected_5h');
   t.after(() => box.cleanup());
