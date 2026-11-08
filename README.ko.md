@@ -124,9 +124,33 @@ claude-warmup config hours 06:00-23:00
 `claude-warmup status --short` 는 `23% · 2시간 17분 남음 · 주간 41%` 같은 한 줄을 출력합니다.
 [SwiftBar](https://github.com/swiftbar/SwiftBar)나 tmux 상태줄에 넣어 쓰세요. 자주 새로고침한다면 `--cached` 를 붙이면 claude를 호출하지 않습니다.
 
+## 서버에서 돌리기
+
+claude-warmup은 설치된 컴퓨터가 켜져 있을 때만 핑을 보낼 수 있습니다. 컴퓨터를 하루 종일 켜 둘 수 없다면 항상 켜져 있는 작은 Linux 서버에 설치하세요. 무료 클라우드 서버(Oracle Cloud의 Always Free 등), 저렴한 VPS, 64비트 OS를 쓰는 라즈베리파이 모두 됩니다. 사용 창은 계정 단위라서 어느 기기에서 핑을 보내든 똑같이 동작합니다.
+
+1. Linux 서버를 만들고 SSH로 접속합니다. Ubuntu 22.04/24.04, Debian 12, Oracle Linux 8/9 모두 되고, 메모리는 1GB면 충분합니다.
+2. 서버에서 설치 스크립트를 내려받아 실행합니다.
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/jungtaejoon/claude-warmup/main/scripts/server-setup.sh
+```
+
+```bash
+bash server-setup.sh --timezone Asia/Seoul --lang ko
+```
+
+스크립트가 필요한 것(Node.js, Claude Code CLI, claude-warmup)을 `~/.local`에 설치하고, 로그인을 안내한 뒤 systemd 타이머를 켭니다. 나중에 다시 실행하면 최신 버전으로 업데이트됩니다.
+
+- **브라우저 없이 로그인:** 스크립트가 보여 주는 링크를 내 컴퓨터 브라우저에서 열어 승인하고, 화면에 나온 코드를 SSH 창에 붙여 넣으면 됩니다.
+- **시간대:** 클라우드 서버는 보통 UTC 시간으로 돌아갑니다. `--timezone`을 주면 서버 시계를 내 시간대로 맞춰서, `hours` 설정과 `status`에 나오는 시각이 내 하루와 맞게 됩니다.
+- **다른 옵션:** `--hours 06:00-23:00`(핑을 보낼 시간대), `--lang ko`, `--skip-login`
+- **로그아웃한 뒤에도:** 스크립트가 `loginctl enable-linger`를 켜 두므로, SSH 접속을 끊어도 타이머가 계속 돕니다.
+- **Oracle Cloud 무료 티어:** Oracle은 일주일 동안 거의 쓰이지 않은 Always Free 서버를 회수할 수 있는데, 워밍업 서버는 대부분의 시간 동안 쉬고 있습니다. 계정을 Pay As You Go로 업그레이드하는 것이 일반적인 해결책이고, 업그레이드해도 Always Free 자원은 계속 무료입니다.
+- **내 컴퓨터:** 내 컴퓨터에 설치한 claude-warmup은 그대로 둬도 됩니다. 둘 다 같은 계정 사용량을 보고 판단합니다. 끄려면 `claude-warmup uninstall`을 실행하세요.
+
 ## 알아 둘 점
 
-- **컴퓨터가 잠자기 중이면 핑을 보낼 수 없습니다.** 깨어나면 바로 확인합니다. Mac을 출근 전에 자동으로 깨우려면:
+- **컴퓨터가 잠자기 중이면 핑을 보낼 수 없습니다.** 깨어나면 바로 확인합니다. 컴퓨터를 항상 켜 둘 수 없다면 [서버에서 돌리기](#서버에서-돌리기)를 참고하세요. Mac을 출근 전에 자동으로 깨우려면:
   ```bash
   sudo pmset repeat wakeorpoweron MTWRFSU 05:55:00
   ```

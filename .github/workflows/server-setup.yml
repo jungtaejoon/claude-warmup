@@ -1,0 +1,47 @@
+name: Server setup
+
+# Tests scripts/server-setup.sh on fresh Linux images, the way a new cloud VM would run it.
+on:
+  push:
+    paths:
+      - scripts/server-setup.sh
+      - .github/workflows/server-setup.yml
+  pull_request:
+    paths:
+      - scripts/server-setup.sh
+      - .github/workflows/server-setup.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck scripts/server-setup.sh
+
+  fresh-linux:
+    name: fresh ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ['ubuntu:24.04', 'debian:12']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make a normal user with sudo, like a cloud VM
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq curl ca-certificates sudo >/dev/null
+          useradd -m -s /bin/bash tester
+          echo 'tester ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/tester
+          install -o tester -m 755 scripts/server-setup.sh /home/tester/server-setup.sh
+      - name: First run (no login in CI)
+        run: su - tester -c 'bash ~/server-setup.sh --skip-login --lang ko --hours 06:00-23:00'
+      - name: Everything is on PATH in a fresh login shell (like reconnecting over SSH)
+        run: su - tester -c 'node --version && claude --version && claude-warmup --version && claude-warmup config'
+      - name: Second run updates in place
+        run: su - tester -c 'bash ~/server-setup.sh --skip-login'

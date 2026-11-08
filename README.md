@@ -124,9 +124,33 @@ claude-warmup config hours 06:00-23:00
 `claude-warmup status --short` prints one line such as `23% · 2h 17m left · week 41%`.
 Use it in [SwiftBar](https://github.com/swiftbar/SwiftBar) or a tmux status line. Add `--cached` for frequent refreshes: it skips the claude call.
 
+## Run it on a server
+
+Pings only go out while the computer running claude-warmup is on. If yours isn't on all day, put claude-warmup on a small always-on Linux machine instead: a free cloud VM (Oracle Cloud's Always Free tier works), a cheap VPS, or a Raspberry Pi with a 64-bit OS. The usage window belongs to your account, so it does not matter which machine sends the ping.
+
+1. Create a Linux server and connect to it with SSH. Ubuntu 22.04/24.04, Debian 12 and Oracle Linux 8/9 all work, and 1 GB of memory is plenty.
+2. Download and run the setup script on the server:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/jungtaejoon/claude-warmup/main/scripts/server-setup.sh
+```
+
+```bash
+bash server-setup.sh --timezone Asia/Seoul
+```
+
+The script installs whatever is missing into `~/.local` (Node.js, the Claude Code CLI, claude-warmup), asks you to log in, and turns on the systemd timer. Run it again later to update.
+
+- **Logging in without a browser:** open the link it prints in a browser on your own computer, approve, and paste the code back into the SSH session.
+- **Time zone:** cloud servers usually run on UTC. `--timezone` sets the server's clock to your time zone, so `hours` and the times in `status` match your day.
+- **More options:** `--hours 06:00-23:00` (when pings may go out), `--lang ko`, `--skip-login`.
+- **After you log out:** the script turns on `loginctl enable-linger`, so the timer keeps running after you disconnect.
+- **Oracle Cloud's free tier:** Oracle may reclaim Always Free instances that stay idle for a week, and a warm-up server is idle nearly all the time. Upgrading the account to Pay As You Go is the usual way to avoid that, and Always Free resources stay free of charge.
+- **Your own computer:** you can leave claude-warmup installed there too, since both read the same account usage, or turn it off with `claude-warmup uninstall`.
+
 ## Good to know
 
-- **Nothing runs while the computer sleeps.** It checks as soon as it wakes up. To wake a Mac before work:
+- **Nothing runs while the computer sleeps.** It checks as soon as it wakes up. If your computer isn't on all day, [run it on a server](#run-it-on-a-server). To wake a Mac before work:
   ```bash
   sudo pmset repeat wakeorpoweron MTWRFSU 05:55:00
   ```
