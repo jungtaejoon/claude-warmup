@@ -52,9 +52,12 @@ test('getSchedule', () => {
 });
 
 test('getPaths per platform', () => {
+  // Literal expectations: the result must not depend on which OS runs the test.
   const home = '/home/u';
-  assert.match(getPaths({}, 'darwin', home).configFile, /Library\/Application Support\/claude-warmup\/config\.json$/);
-  assert.equal(getPaths({}, 'linux', home).configDir, path.join(home, '.config', 'claude-warmup'));
-  assert.equal(getPaths({ XDG_DATA_HOME: '/xdg' }, 'linux', home).dataDir, path.join('/xdg', 'claude-warmup'));
-  assert.equal(getPaths({ APPDATA: 'C:/R', LOCALAPPDATA: 'C:/L' }, 'win32', home).dataDir, path.join('C:/L', 'claude-warmup'));
+  assert.equal(getPaths({}, 'darwin', home).configFile, '/home/u/Library/Application Support/claude-warmup/config.json');
+  assert.equal(getPaths({}, 'linux', home).configDir, '/home/u/.config/claude-warmup');
+  assert.equal(getPaths({ XDG_DATA_HOME: '/xdg' }, 'linux', home).dataDir, '/xdg/claude-warmup');
+  const winHome = 'C:\\Users\\u';
+  assert.equal(getPaths({}, 'win32', winHome).configDir, 'C:\\Users\\u\\AppData\\Roaming\\claude-warmup');
+  assert.equal(getPaths({ APPDATA: 'C:\\R', LOCALAPPDATA: 'C:\\L' }, 'win32', winHome).stateFile, 'C:\\L\\claude-warmup\\state.json');
 });
