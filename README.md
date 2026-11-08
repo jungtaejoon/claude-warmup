@@ -1,5 +1,7 @@
 # claude-warmup
 
+[![CI](https://github.com/jungtaejoon/claude-warmup/actions/workflows/ci.yml/badge.svg)](https://github.com/jungtaejoon/claude-warmup/actions/workflows/ci.yml)
+
 **English** · [한국어](README.ko.md)
 
 A tiny tool that **starts your Claude (Pro/Max) 5-hour usage window early**.

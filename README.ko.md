@@ -1,5 +1,7 @@
 # claude-warmup
 
+[![CI](https://github.com/jungtaejoon/claude-warmup/actions/workflows/ci.yml/badge.svg)](https://github.com/jungtaejoon/claude-warmup/actions/workflows/ci.yml)
+
 [English](README.md) · **한국어**
 
 Claude(Pro/Max) 의 **5시간 사용 창을 미리 시작해 두는** 작은 도구입니다.
