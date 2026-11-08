@@ -410,7 +410,7 @@ async function cmdInstall({ paths, config, opts }) {
     console.log(`  ${t('firstCheck', { result: describeTick(r) })}`);
   }
   if (process.platform === 'darwin') console.log(fmt.color.dim(`\n${t('tipMacSleep')}`));
-  if (used === 'systemd') console.log(fmt.color.dim(`\n${t('tipLinger')}`));
+  if (used === 'systemd' && !(await backend.lingerEnabled?.())) console.log(fmt.color.dim(`\n${t('tipLinger')}`));
   console.log(fmt.color.dim(t('tipStatus')));
   return 0;
 }

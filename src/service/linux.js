@@ -79,6 +79,12 @@ async function removeCron() {
   }
 }
 
+/** True when systemd keeps this user's timers running after logout (loginctl enable-linger). */
+export async function lingerEnabled(user = os.userInfo().username) {
+  const r = await runProcess('loginctl', ['show-user', user, '--property=Linger', '--value'], { timeoutMs: 15_000 });
+  return !r.error && r.code === 0 && r.stdout.trim() === 'yes';
+}
+
 async function systemdAvailable() {
   const r = await runProcess('systemctl', ['--user', 'show-environment'], { timeoutMs: 15_000 });
   return r.code === 0;
