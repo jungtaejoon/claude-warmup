@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>claude-warmup: start your Claude 5-hour usage window early</title>
+<meta name="description" content="Free, open-source CLI that starts your Claude Pro/Max 5-hour session window before you begin work, so the usage limit resets while you are working. Shows session and weekly usage. macOS, Linux, Windows and servers.">
+<link rel="canonical" href="https://jungtaejoon.github.io/claude-warmup/">
+<link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/">
+<link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/">
+<link rel="alternate" hreflang="x-default" href="https://jungtaejoon.github.io/claude-warmup/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="claude-warmup: start your Claude 5-hour window early">
+<meta property="og:description" content="Line up Claude's 5-hour usage resets with your working hours. One tiny scheduled message through the official Claude Code CLI, plus live usage status.">
+<meta property="og:url" content="https://jungtaejoon.github.io/claude-warmup/">
+<meta property="og:image" content="https://jungtaejoon.github.io/claude-warmup/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#c2562f">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "claude-warmup",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "macOS, Linux, Windows",
+  "description": "Starts your Claude Pro/Max 5-hour usage window early with one tiny scheduled message through the official Claude Code CLI, and shows session and weekly usage with reset times.",
+  "url": "https://jungtaejoon.github.io/claude-warmup/",
+  "downloadUrl": "https://github.com/jungtaejoon/claude-warmup",
+  "codeRepository": "https://github.com/jungtaejoon/claude-warmup",
+  "license": "https://opensource.org/licenses/MIT",
+  "softwareVersion": "0.1.0",
+  "inLanguage": ["en", "ko"],
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "jungtaejoon", "url": "https://github.com/jungtaejoon" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "When does the Claude 5-hour usage limit reset?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Claude's session limit runs in 5-hour windows that start with your first message. If your first message is at 9:00, the window resets at 14:00. claude-warmup sends a tiny message earlier (for example at 6:00), so the reset lands at 11:00, in the middle of your workday." } },
+    { "@type": "Question", "name": "Does claude-warmup give me more Claude usage?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Your limits stay the same. It only moves the 5-hour resets so they line up with your working hours." } },
+    { "@type": "Question", "name": "How much usage does the warm-up message cost?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Almost none. Checks use the local /usage command of Claude Code, which uses 0 tokens. The warm-up itself is one short message to the haiku model, sent at most once per 5-hour window." } },
+    { "@type": "Question", "name": "Can I run it when my computer is off?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Run it on any always-on Linux machine, such as a free cloud VM or a Raspberry Pi. A setup script installs Node.js, the Claude Code CLI and claude-warmup, and turns on a systemd timer." } },
+    { "@type": "Question", "name": "Does claude-warmup read my Claude password or token?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. All sign-in is handled by the official claude CLI. claude-warmup never reads credentials, and it strips API-key variables so pings always count against your subscription." } }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./">claude<span>-</span>warmup</a>
+    <nav class="top">
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#install">Install</a>
+      <a href="ko/" hreflang="ko" lang="ko">한국어</a>
+      <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <h1>Start your Claude 5-hour usage window before you start work</h1>
+    <p class="lead">Claude Pro and Max limits reset 5 hours after your first message. <strong>claude-warmup</strong> sends one tiny message early, so the reset lands in the middle of your workday instead of at the end. It also shows your session and weekly usage.</p>
+    <div class="cta">
+      <a class="btn primary" href="#install">Install in 1 minute</a>
+      <a class="btn ghost" href="https://github.com/jungtaejoon/claude-warmup">View on GitHub</a>
+    </div>
+<pre class="term" aria-label="Example output of claude-warmup status"><span class="dim">$</span> claude-warmup
+Claude Warmup v0.1.0
+
+Usage  <span class="dim">checked 08:42 · claude /usage</span>
+  Current session (5h)  <span class="bar">█████</span><span class="dim">░░░░░░░░░░░░░░░</span>  23%  resets 11:00 <span class="dim">(in 2h 17m)</span>
+  Weekly · all models   <span class="bar">████████</span><span class="dim">░░░░░░░░░░░░</span>  41%  resets Tue 10:00
+
+Auto warm-up
+  Status      <span class="ok">● on</span> (launchd, checks every 5 min)
+  Last ping   06:00 <span class="ok">✓</span> haiku · window until 11:00
+  Next ping   ~11:00, right after the current window resets</pre>
+  </div>
+
+  <section id="why">
+    <h2>Why warm up the Claude 5-hour window?</h2>
+    <p>Claude's session limit is counted in <a href="https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work">5-hour windows that begin with your first message</a>. Start at 9:00 and hit the limit at noon, and you wait until 14:00. Open the window at 6:00 instead, and you get a fresh one at 11:00.</p>
+    <div class="timeline" role="img" aria-label="Without warm-up the window runs 9 to 14. With a 6:00 warm-up, windows reset at 11 and 16.">
+      <div class="tl-row">
+        <strong>Without warm-up</strong>
+        <div class="track">
+          <div class="seg win" style="left:20%;width:33.3%">9:00 → 14:00</div>
+          <div class="seg win2" style="left:53.3%;width:33.3%">14:00 → 19:00</div>
+        </div>
+        <div class="ticks"><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span></div>
+        <p>One window covers most of the day. Hit the limit at noon and you are stuck until 14:00.</p>
+      </div>
+      <div class="tl-row">
+        <strong>With a 6:00 warm-up</strong>
+        <div class="track">
+          <div class="seg win" style="left:0;width:33.3%">ping 6:00 → 11:00</div>
+          <div class="seg win" style="left:33.3%;width:33.3%">11:00 → 16:00</div>
+          <div class="seg win2" style="left:66.6%;width:33.4%">16:00 → 21:00</div>
+        </div>
+        <div class="ticks"><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span></div>
+        <p>A fresh window at 11:00, right when the morning's work has used up the first one.</p>
+      </div>
+    </div>
+    <p>Your limits do not grow. The resets just move to where they help.</p>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>The OS scheduler (launchd, systemd or cron, Task Scheduler) runs a check every 5 minutes.</li>
+      <li>If the current window is still running, the check does nothing. No Claude call at all.</li>
+      <li>Otherwise it reads usage with Claude Code's local <code>/usage</code> command: 0 tokens, $0.</li>
+      <li>Only when no window is active does it send <code>hi</code> to haiku through the official <code>claude</code> CLI, with tools, MCP and hooks turned off.</li>
+      <li>It records when the new window ends and sleeps until then. "Every 5 hours" follows the real window, not a clock.</li>
+    </ol>
+    <div class="grid">
+      <div class="card"><h3>Never reads credentials</h3><p>Sign-in stays with the official Claude Code CLI. API-key variables are stripped, so nothing is billed to an API key.</p></div>
+      <div class="card"><h3>Zero dependencies</h3><p>Plain Node.js 18+, small enough to read in one sitting. MIT licensed.</p></div>
+      <div class="card"><h3>Working hours</h3><p>Limit pings to <code>06:00-23:00</code>, weekdays, or any days you choose.</p></div>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2>Install</h2>
+    <p>You need Node.js 18+ and the <a href="https://code.claude.com/docs/en/setup">Claude Code CLI</a>, logged in with a Pro or Max subscription.</p>
+    <div class="copy"><pre><code>npm install -g github:jungtaejoon/claude-warmup</code></pre><button type="button">Copy</button></div>
+    <div class="copy"><pre><code>claude-warmup install</code></pre><button type="button">Copy</button></div>
+    <p>Suggested: if you start at 9, let pings begin at 6.</p>
+    <div class="copy"><pre><code>claude-warmup config hours 06:00-23:00</code></pre><button type="button">Copy</button></div>
+
+    <h3 id="server">Run it on a free server</h3>
+    <p>Computer not on all day? Put it on any always-on Linux machine: a free cloud VM such as Oracle Cloud Always Free, a cheap VPS or a Raspberry Pi. The window belongs to your account, so any machine can send the ping.</p>
+    <div class="copy"><pre><code>curl -fsSLO https://raw.githubusercontent.com/jungtaejoon/claude-warmup/main/scripts/server-setup.sh && bash server-setup.sh --timezone America/New_York</code></pre><button type="button">Copy</button></div>
+    <p>It installs Node.js, Claude Code and claude-warmup into <code>~/.local</code>, walks you through a browserless login and turns on a systemd timer. <a href="https://github.com/jungtaejoon/claude-warmup#run-it-on-a-server">Server guide</a></p>
+  </section>
+
+  <section id="faq">
+    <h2>FAQ</h2>
+    <details open><summary>When does the Claude 5-hour usage limit reset?</summary><p>5 hours after the first message of a window. First message at 9:00 means a reset at 14:00. A warm-up at 6:00 moves it to 11:00.</p></details>
+    <details><summary>Does this give me more Claude usage?</summary><p>No. Same limits, placed better for your working hours.</p></details>
+    <details><summary>How much usage does the warm-up cost?</summary><p>Almost none. Checks use the local <code>/usage</code> command (0 tokens). The ping is one short haiku message per window.</p></details>
+    <details><summary>Can I run it while my computer is off?</summary><p>Yes, on a server. See <a href="#server">Run it on a free server</a>.</p></details>
+    <details><summary>Does it read my Claude password or token?</summary><p>No. The official <code>claude</code> CLI handles all sign-in.</p></details>
+    <details><summary>Is this allowed?</summary><p>It is a tiny request made with your own account through the official Claude Code CLI. Read <a href="https://www.anthropic.com/legal/consumer-terms">Anthropic's terms</a> and decide for yourself.</p></details>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Unofficial open-source project, not affiliated with Anthropic. "Claude" is a trademark of Anthropic. MIT License · <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a> · <a href="ko/" hreflang="ko" lang="ko">한국어</a></p>
+  </div>
+</footer>
+<script src="copy.js" defer></script>
+</body>
+</html>

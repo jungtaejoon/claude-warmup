@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/jungtaejoon/claude-warmup/actions/workflows/ci.yml/badge.svg)](https://github.com/jungtaejoon/claude-warmup/actions/workflows/ci.yml)
 
-[English](README.md) · **한국어**
+[English](README.md) · **한국어** · [웹사이트](https://jungtaejoon.github.io/claude-warmup/ko/)
 
-Claude(Pro/Max) 의 **5시간 사용 창을 미리 시작해 두는** 작은 도구입니다.
+Claude(Pro/Max) 의 **5시간 사용 창을 미리 시작해 두는** 작은 도구입니다. 클로드 사용량 한도가 하루 끝이 아니라 한창 일하는 중간에 리셋되도록 맞춰 줍니다.
 백그라운드에서 몇 분마다 상태를 확인하고, 활성 세션이 없을 때만 공식 `claude` CLI로 아주 짧은 메시지(haiku, "hi")를 보냅니다.
 현재 세션·주간 사용량과 리셋 시각도 보여 줍니다.
 

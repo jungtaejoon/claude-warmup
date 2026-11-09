@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/jungtaejoon/claude-warmup/actions/workflows/ci.yml/badge.svg)](https://github.com/jungtaejoon/claude-warmup/actions/workflows/ci.yml)
 
-**English** · [한국어](README.ko.md)
+**English** · [한국어](README.ko.md) · [Website](https://jungtaejoon.github.io/claude-warmup/)
 
-A tiny tool that **starts your Claude (Pro/Max) 5-hour usage window early**.
+A tiny tool that **starts your Claude (Pro/Max) 5-hour usage window early**, so the Claude usage limit resets in the middle of your workday instead of at the end.
 A background check runs every few minutes, and only when no session window is active does it send one very short message ("hi", on haiku) through the official `claude` CLI.
 It also shows your current session and weekly usage, with reset times.
 

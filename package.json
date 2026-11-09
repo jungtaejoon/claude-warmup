@@ -1,7 +1,7 @@
 {
   "name": "claude-warmup",
   "version": "0.1.0",
-  "description": "Start your Claude 5-hour usage window early: a tiny scheduled warm-up message through the official Claude Code CLI, plus live usage status.",
+  "description": "Start your Claude Pro/Max 5-hour usage window early so the limit resets mid-workday: a tiny scheduled warm-up through the official Claude Code CLI, plus live session and weekly usage.",
   "type": "module",
   "bin": {
     "claude-warmup": "bin/claude-warmup.js"
@@ -22,13 +22,21 @@
   "keywords": [
     "claude",
     "claude-code",
+    "claude-ai",
+    "anthropic",
+    "claude-pro",
+    "claude-max",
+    "usage-limit",
     "usage-limits",
     "rate-limit",
-    "5-hour",
+    "5-hour-limit",
+    "session-limit",
+    "warmup",
     "scheduler",
     "launchd",
     "systemd",
-    "cli"
+    "cli",
+    "productivity"
   ],
   "author": "jungtaejoon",
   "license": "MIT",
@@ -36,7 +44,7 @@
     "type": "git",
     "url": "git+https://github.com/jungtaejoon/claude-warmup.git"
   },
-  "homepage": "https://github.com/jungtaejoon/claude-warmup#readme",
+  "homepage": "https://jungtaejoon.github.io/claude-warmup/",
   "bugs": {
     "url": "https://github.com/jungtaejoon/claude-warmup/issues"
   }
