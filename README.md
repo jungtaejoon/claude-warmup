@@ -40,6 +40,18 @@ Warm-up 06:00   06:00 ── ping ── 09:00 ── work ── 11:00 reset �
 - It does not raise your limits. It only lines the resets up with your working hours.
 - The weekly limit is separate and resets at a fixed time. One haiku "hi" barely touches it.
 
+## What makes it different
+
+You can also warm up the window with a fixed-time cron job or a hosted CI runner. claude-warmup asks for less trust and less guessing:
+
+| | claude-warmup | Fixed-time cron or CI job |
+| --- | --- | --- |
+| Where it runs | Your own computer or server | Often a hosted runner, with your Claude token copied into its secrets |
+| Your credentials | Never read or copied; the official `claude` CLI keeps them | Token has to be exported and stored elsewhere |
+| When it pings | Only when no window is open, checked every 5 minutes | At fixed times, even if a window is already running |
+| Cost of a check | 0 tokens (local `/usage`) | Each run is a real message |
+| Usage view | Session, weekly and per-model usage with reset times | None |
+
 ## How it works
 
 1. The OS scheduler (macOS launchd, Linux systemd or cron, Windows Task Scheduler) runs `claude-warmup tick` every N minutes (default 5).

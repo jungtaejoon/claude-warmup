@@ -66,6 +66,7 @@
     <nav class="top">
       <a class="hide-sm" href="#how">동작 방식</a>
       <a class="hide-sm" href="#install">설치</a>
+      <a class="hide-sm" href="claude-usage-limit-reset/">리셋 가이드</a>
       <a href="../" hreflang="en" lang="en">English</a>
       <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a>
     </nav>
@@ -120,6 +121,22 @@ Claude Warmup v0.1.0
     <p>한도가 늘어나는 건 아니에요. 리셋 시점을 쓸모 있는 곳으로 옮길 뿐입니다.</p>
   </section>
 
+  <section id="different">
+    <h2>다른 방법과 뭐가 다른가요?</h2>
+    <p>정해진 시각에 도는 cron이나 클라우드 CI로도 창을 미리 열 수 있어요. claude-warmup은 로그인 정보를 맡기지 않고, 시각을 맞추느라 고민하지 않아도 되게 만들었어요.</p>
+    <div class="table-wrap"><table class="cmp">
+      <thead><tr><th></th><th>claude-warmup</th><th>정해진 시각의 cron·CI 작업</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">어디서 도나요</th><td>내 컴퓨터나 내 서버</td><td>주로 클라우드 러너. Claude 토큰을 그쪽 시크릿에 복사해 둬야 해요</td></tr>
+        <tr><th scope="row">로그인 정보</th><td>읽지도 복사하지도 않아요. 공식 <code>claude</code> CLI가 보관해요</td><td>토큰을 꺼내서 다른 곳에 저장해야 해요</td></tr>
+        <tr><th scope="row">언제 보내나요</th><td>5분마다 확인해서 열린 창이 없을 때만</td><td>창이 이미 열려 있어도 정해진 시각에</td></tr>
+        <tr><th scope="row">확인 비용</th><td>토큰 0 (로컬 <code>/usage</code>)</td><td>실행할 때마다 실제 메시지 한 번</td></tr>
+        <tr><th scope="row">사용량 보기</th><td>세션·주간·모델별 사용량과 리셋 시각</td><td>없음</td></tr>
+        <tr><th scope="row">설치</th><td>macOS·Linux·Windows에서 명령 두 줄</td><td>포크, 토큰, 시크릿, cron 식 설정</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
   <section id="how">
     <h2>동작 방식</h2>
     <ol class="steps">
@@ -152,7 +169,7 @@ Claude Warmup v0.1.0
 
   <section id="faq">
     <h2>자주 묻는 질문</h2>
-    <details open><summary>Claude 5시간 사용량 한도는 언제 리셋되나요?</summary><p>창의 첫 메시지로부터 5시간 뒤예요. 9시에 첫 메시지를 보내면 14시에 리셋되고, 6시에 워밍업하면 11시로 당겨집니다.</p></details>
+    <details open><summary>Claude 5시간 사용량 한도는 언제 리셋되나요?</summary><p>창의 첫 메시지로부터 5시간 뒤예요. 9시에 첫 메시지를 보내면 14시에 리셋되고, 6시에 워밍업하면 11시로 당겨집니다. 자세한 내용은 <a href="claude-usage-limit-reset/">Claude 사용량 한도 리셋 가이드</a>에 있어요.</p></details>
     <details><summary>사용량이 늘어나나요?</summary><p>아니요. 같은 한도를 작업 시간에 더 잘 맞게 배치할 뿐이에요.</p></details>
     <details><summary>워밍업은 사용량을 얼마나 쓰나요?</summary><p>거의 안 써요. 확인은 로컬 <code>/usage</code> 명령(토큰 0)이고, 핑은 창마다 haiku 짧은 메시지 하나예요.</p></details>
     <details><summary>컴퓨터를 꺼 둬도 되나요?</summary><p>네, 서버에서 돌리면 됩니다. <a href="#server">무료 서버에서 돌리기</a>를 보세요.</p></details>

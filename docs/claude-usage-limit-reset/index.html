@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When does the Claude usage limit reset? How to time the 5-hour window</title>
+<meta name="description" content="Claude Pro and Max limits reset 5 hours after the first message of a window. How to check your reset time, and how to move the reset into the middle of your workday.">
+<link rel="canonical" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
+<link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
+<link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/">
+<link rel="alternate" hreflang="x-default" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="When does the Claude usage limit reset?">
+<meta property="og:description" content="How the 5-hour window works, how to see your reset time, and how to make the reset land while you work.">
+<meta property="og:url" content="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
+<meta property="og:image" content="https://jungtaejoon.github.io/claude-warmup/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#c2562f">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "When does the Claude usage limit reset? How to time the 5-hour window",
+  "description": "Claude Pro and Max limits reset 5 hours after the first message of a window. How to check your reset time, and how to move the reset into the middle of your workday.",
+  "inLanguage": "en",
+  "datePublished": "2026-11-10",
+  "dateModified": "2026-11-10",
+  "image": "https://jungtaejoon.github.io/claude-warmup/og.png",
+  "mainEntityOfPage": "https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/",
+  "author": { "@type": "Person", "name": "jungtaejoon", "url": "https://github.com/jungtaejoon" }
+}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="../">claude<span>-</span>warmup</a>
+    <nav class="top">
+      <a class="hide-sm" href="../#install">Install</a>
+      <a href="../ko/claude-usage-limit-reset/" hreflang="ko" lang="ko">한국어</a>
+      <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+<article class="guide">
+  <h1>When does the Claude usage limit reset?</h1>
+  <p class="meta">Guide · Claude Pro and Max · Updated November 2026</p>
+
+  <p>If you use Claude Pro or Max all day, you have probably seen "limit reached, resets at 14:00" right in the middle of your work. This guide explains how the reset is timed, how to see your own reset time, and how to move it to a better spot.</p>
+
+  <div class="callout"><p><strong>Short answer:</strong> the session limit resets <strong>5 hours after the first message</strong> of a window. Send your first message at 9:00 and it resets at 14:00. Send one at 6:00 and it resets at 11:00.</p></div>
+
+  <h2>How the 5-hour window works</h2>
+  <ul>
+    <li>A window starts with your first message after the previous one has ended. It does not start at a fixed clock time. (<a href="https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work">Claude help center</a>)</li>
+    <li>Everything you do in that window counts toward one limit: Claude on the web, the desktop and mobile apps, and Claude Code all share it.</li>
+    <li>When the window ends, the session limit resets fully. The next message starts a new window.</li>
+    <li>There is also a separate <strong>weekly limit</strong>. Moving your 5-hour windows does not change it.</li>
+  </ul>
+
+  <h2>How to check your reset time</h2>
+  <ul>
+    <li><strong>Claude Code:</strong> run <code>/usage</code>. It shows the current session and weekly usage, each with its reset time.</li>
+    <li><strong>claude.ai:</strong> open Settings and look at the usage section.</li>
+    <li><strong>claude-warmup:</strong> run <code>claude-warmup</code> in a terminal. It prints the same numbers as progress bars, with "resets 11:00 (in 2h 17m)".</li>
+  </ul>
+
+  <h2>Why the default timing hurts</h2>
+  <p>Most people send their first message when they start work. That puts the whole morning in one window. A busy morning uses it up around noon, and the reset comes in mid-afternoon, so you lose the most productive hours waiting.</p>
+
+  <h2>How to make the reset land while you work</h2>
+  <p>Start the window <strong>before</strong> you start working. If you start at 9:00, open the window around 6:00:</p>
+  <ul>
+    <li>6:00 to 11:00: the first window. You only use the 9:00 to 11:00 part of it.</li>
+    <li>11:00: a fresh window, just as the morning's work would have hit the limit.</li>
+    <li>16:00: another fresh window for the late afternoon.</li>
+  </ul>
+  <p>You can do this in three ways:</p>
+  <ol>
+    <li><strong>By hand.</strong> Send any short message from your phone when you wake up. Free and simple, but easy to forget.</li>
+    <li><strong>With a fixed scheduled job.</strong> A cron job that runs <code>claude -p hi --model haiku</code> at 6:00. It works, but it fires at fixed times even when a window is already open, and hosted runners need your token copied into their secrets.</li>
+    <li><strong>With <a href="../">claude-warmup</a>.</strong> It checks every 5 minutes with the local <code>/usage</code> command (0 tokens) and sends one tiny haiku message only when no window is open. It runs on your own machine or server and never reads your credentials.</li>
+  </ol>
+
+  <h2>Set it up with claude-warmup</h2>
+  <p>You need Node.js 18+ and the Claude Code CLI, logged in with Pro or Max.</p>
+  <div class="copy"><pre><code>npm install -g github:jungtaejoon/claude-warmup</code></pre><button type="button">Copy</button></div>
+  <div class="copy"><pre><code>claude-warmup install</code></pre><button type="button">Copy</button></div>
+  <div class="copy"><pre><code>claude-warmup config hours 06:00-23:00</code></pre><button type="button">Copy</button></div>
+  <p>If your computer is off in the early morning, run it on a free always-on server instead. See the <a href="../#server">server setup</a>.</p>
+
+  <h2>Things to keep in mind</h2>
+  <ul>
+    <li>This does not give you more usage. It only changes when the resets happen.</li>
+    <li>The warm-up message itself uses a tiny amount of the new window.</li>
+    <li>Your weekly limit still applies.</li>
+  </ul>
+</article>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Unofficial open-source project, not affiliated with Anthropic. "Claude" is a trademark of Anthropic. <a href="../">claude-warmup</a> · <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a> · <a href="../ko/claude-usage-limit-reset/" hreflang="ko" lang="ko">한국어</a></p>
+  </div>
+</footer>
+<script src="../copy.js" defer></script>
+</body>
+</html>

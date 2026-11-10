@@ -2,14 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://jungtaejoon.github.io/claude-warmup/</loc>
-    <lastmod>2026-11-09</lastmod>
+    <lastmod>2026-11-10</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/"/>
     <xhtml:link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/"/>
   </url>
   <url>
     <loc>https://jungtaejoon.github.io/claude-warmup/ko/</loc>
-    <lastmod>2026-11-09</lastmod>
+    <lastmod>2026-11-10</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/"/>
     <xhtml:link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/"/>
+  </url>
+  <url>
+    <loc>https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/</loc>
+    <lastmod>2026-11-10</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/"/>
+  </url>
+  <url>
+    <loc>https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/</loc>
+    <lastmod>2026-11-10</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/"/>
   </url>
 </urlset>

@@ -66,6 +66,7 @@
     <nav class="top">
       <a class="hide-sm" href="#how">How it works</a>
       <a class="hide-sm" href="#install">Install</a>
+      <a class="hide-sm" href="claude-usage-limit-reset/">Reset guide</a>
       <a href="ko/" hreflang="ko" lang="ko">한국어</a>
       <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a>
     </nav>
@@ -120,6 +121,22 @@ Auto warm-up
     <p>Your limits do not grow. The resets just move to where they help.</p>
   </section>
 
+  <section id="different">
+    <h2>What makes it different</h2>
+    <p>You can warm up the window with a fixed cron job or a hosted CI runner too. claude-warmup is built to need less trust and less guessing.</p>
+    <div class="table-wrap"><table class="cmp">
+      <thead><tr><th></th><th>claude-warmup</th><th>Fixed-time cron or CI job</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Where it runs</th><td>Your own computer or server</td><td>Often a hosted runner, with your Claude token copied into its secrets</td></tr>
+        <tr><th scope="row">Your credentials</th><td>Never read or copied. The official <code>claude</code> CLI keeps them.</td><td>Token has to be exported and stored elsewhere</td></tr>
+        <tr><th scope="row">When it pings</th><td>Only when no window is open, checked every 5 minutes</td><td>At fixed times, even if a window is already running</td></tr>
+        <tr><th scope="row">Cost of a check</th><td>0 tokens (local <code>/usage</code>)</td><td>Each run is a real message</td></tr>
+        <tr><th scope="row">Usage view</th><td>Session, weekly and per-model usage with reset times</td><td>None</td></tr>
+        <tr><th scope="row">Setup</th><td>Two commands on macOS, Linux or Windows</td><td>Fork, tokens, secrets and a cron expression</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
   <section id="how">
     <h2>How it works</h2>
     <ol class="steps">
@@ -152,7 +169,7 @@ Auto warm-up
 
   <section id="faq">
     <h2>FAQ</h2>
-    <details open><summary>When does the Claude 5-hour usage limit reset?</summary><p>5 hours after the first message of a window. First message at 9:00 means a reset at 14:00. A warm-up at 6:00 moves it to 11:00.</p></details>
+    <details open><summary>When does the Claude 5-hour usage limit reset?</summary><p>5 hours after the first message of a window. First message at 9:00 means a reset at 14:00. A warm-up at 6:00 moves it to 11:00. More in the <a href="claude-usage-limit-reset/">Claude usage limit reset guide</a>.</p></details>
     <details><summary>Does this give me more Claude usage?</summary><p>No. Same limits, placed better for your working hours.</p></details>
     <details><summary>How much usage does the warm-up cost?</summary><p>Almost none. Checks use the local <code>/usage</code> command (0 tokens). The ping is one short haiku message per window.</p></details>
     <details><summary>Can I run it while my computer is off?</summary><p>Yes, on a server. See <a href="#server">Run it on a free server</a>.</p></details>
