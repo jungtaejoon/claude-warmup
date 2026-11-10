@@ -2,7 +2,7 @@
 
 const en = {
   unknownCommand: 'Unknown command: {cmd}',
-  help: `Claude Warmup: start your Claude 5-hour usage window early.
+  help: `Claude Warmup: keep a Claude 5-hour usage window always running.
 
 Usage: claude-warmup [command] [options]
 
@@ -186,7 +186,7 @@ Examples
 
 const ko = {
   unknownCommand: '알 수 없는 명령: {cmd}',
-  help: `Claude Warmup: Claude 5시간 사용 창을 미리 시작해 두는 도구
+  help: `Claude Warmup: Claude 5시간 사용 창을 늘 켜 두는 도구
 
 사용법: claude-warmup [명령] [옵션]
 

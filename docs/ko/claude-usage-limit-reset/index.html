@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claude 사용량 한도는 언제 리셋될까? 5시간 창 리셋 시간 맞추는 법</title>
-<meta name="description" content="Claude Pro·Max 한도는 첫 메시지 후 5시간이 지나면 리셋됩니다. 내 리셋 시각을 확인하는 법과, 리셋이 일하는 중간에 오도록 맞추는 법을 정리했어요.">
+<title>Claude 사용량 한도는 언제 리셋될까? 5시간을 꽉 채워 기다리지 않는 법</title>
+<meta name="description" content="Claude Pro·Max 한도는 첫 메시지 후 5시간이 지나면 리셋됩니다. 내 리셋 시각을 확인하는 법과, 창을 늘 켜 두어 5시간을 꽉 채워 기다리지 않는 법을 정리했어요.">
 <link rel="canonical" href="https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/">
 <link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
 <link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/">
 <link rel="alternate" hreflang="x-default" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Claude 사용량 한도는 언제 리셋될까?">
-<meta property="og:description" content="5시간 창이 도는 방식, 내 리셋 시각 확인하는 법, 리셋을 일하는 중간으로 옮기는 법.">
+<meta property="og:description" content="5시간 창이 도는 방식, 내 리셋 시각 확인하는 법, 첫 메시지가 5시간 기다림을 새로 시작하지 않게 하는 법.">
 <meta property="og:url" content="https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/">
 <meta property="og:image" content="https://jungtaejoon.github.io/claude-warmup/og.png">
 <meta property="og:locale" content="ko_KR">
@@ -23,8 +23,8 @@
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Claude 사용량 한도는 언제 리셋될까? 5시간 창 리셋 시간 맞추는 법",
-  "description": "Claude Pro·Max 한도는 첫 메시지 후 5시간이 지나면 리셋됩니다. 내 리셋 시각을 확인하는 법과, 리셋이 일하는 중간에 오도록 맞추는 법을 정리했어요.",
+  "headline": "Claude 사용량 한도는 언제 리셋될까? 5시간을 꽉 채워 기다리지 않는 법",
+  "description": "Claude Pro·Max 한도는 첫 메시지 후 5시간이 지나면 리셋됩니다. 내 리셋 시각을 확인하는 법과, 창을 늘 켜 두어 5시간을 꽉 채워 기다리지 않는 법을 정리했어요.",
   "inLanguage": "ko",
   "datePublished": "2026-11-10",
   "dateModified": "2026-11-10",
@@ -52,9 +52,9 @@
   <h1>Claude 사용량 한도는 언제 리셋될까?</h1>
   <p class="meta">가이드 · Claude Pro·Max · 2026년 11월 기준</p>
 
-  <p>Claude Pro나 Max를 하루 종일 쓰다 보면, 한창 일하는 중에 "한도 도달, 14:00에 리셋" 같은 메시지를 보게 됩니다. 이 글에서는 리셋 시각이 어떻게 정해지는지, 내 리셋 시각은 어디서 보는지, 그리고 리셋을 더 좋은 때로 옮기는 방법을 정리했어요.</p>
+  <p>Claude Pro나 Max를 하루 종일 쓰다 보면, 한창 일하는 중에 "한도 도달, 14:00에 리셋" 같은 메시지를 보게 됩니다. 이 글에서는 리셋 시각이 어떻게 정해지는지, 내 리셋 시각은 어디서 보는지, 그리고 5시간을 꽉 채워 기다리지 않는 방법을 정리했어요.</p>
 
-  <div class="callout"><p><strong>짧은 답:</strong> 세션 한도는 창의 <strong>첫 메시지로부터 5시간 뒤</strong>에 리셋됩니다. 9시에 첫 메시지를 보내면 14시에, 6시에 보내면 11시에 리셋돼요.</p></div>
+  <div class="callout"><p><strong>짧은 답:</strong> 세션 한도는 창의 <strong>첫 메시지로부터 5시간 뒤</strong>에 리셋됩니다. 그 첫 메시지가 내가 9시에 보낸 것이면 14시에, 6시부터 이미 창이 흐르고 있었다면 11시에 리셋돼요.</p></div>
 
   <h2>5시간 창은 이렇게 돌아가요</h2>
   <ul>
@@ -71,21 +71,22 @@
     <li><strong>claude-warmup:</strong> 터미널에서 <code>claude-warmup</code>을 실행하면 같은 정보를 막대그래프와 "11:00 리셋 (2시간 17분 후)" 형태로 보여 줘요.</li>
   </ul>
 
-  <h2>기본 타이밍이 손해인 이유</h2>
-  <p>대부분 일을 시작할 때 첫 메시지를 보내요. 그러면 오전 전체가 한 창에 들어가고, 바쁜 오전이면 정오쯤 한도를 다 써 버려요. 리셋은 오후 2시쯤에야 와서, 가장 집중이 잘 되는 시간에 기다리게 됩니다.</p>
+  <h2>내 첫 메시지가 손해인 이유</h2>
+  <p>자리에 앉았을 때 열린 창이 없으면, 내 첫 메시지가 5시간 시계를 새로 시작해요. 일찍 한도에 걸리면 5시간 가까이를 통째로 기다려야 하죠. 아침, 점심 뒤, 저녁처럼 앞 창보다 오래 쉬었다 돌아올 때마다 이런 일이 생겨요.</p>
 
-  <h2>리셋이 일하는 중간에 오게 하는 법</h2>
-  <p>일을 시작하기 <strong>전에</strong> 창을 열어 두면 돼요. 9시에 일을 시작한다면 6시쯤 창을 엽니다.</p>
+  <h2>창을 늘 켜 두는 법</h2>
+  <p>앞 창이 끝나는 순간 새 창이 시작되게 하면, 내가 앉을 때는 언제나 이미 창이 흐르고 있어요. 5시간 중 일부가 벌써 지났으니 다음 리셋도 그만큼 가까워요. 6시부터 창을 이어 두면:</p>
   <ul>
-    <li>6:00~11:00: 첫 번째 창. 실제로는 9시~11시만 써요.</li>
-    <li>11:00: 오전 작업으로 한도에 걸릴 무렵 새 창이 열려요.</li>
-    <li>16:00: 늦은 오후를 위한 또 하나의 새 창.</li>
+    <li>창이 6:00~11:00, 11:00~16:00, 16:00~21:00로 끊김 없이 이어져요.</li>
+    <li>9시에 시작하면 다음 리셋은 14시가 아니라 11시예요.</li>
+    <li>점심 먹고 13시에 시작하면 18시가 아니라 16시예요.</li>
   </ul>
+  <p>평균적으로 다음 리셋까지 5시간이 아니라 2시간 반 정도만 남아 있어요.</p>
   <p>방법은 세 가지예요.</p>
   <ol>
-    <li><strong>직접 보내기.</strong> 일어나서 휴대폰으로 아무 짧은 메시지나 보내요. 공짜고 간단하지만 잊기 쉬워요.</li>
-    <li><strong>정해진 시각에 도는 작업.</strong> 6시에 <code>claude -p hi --model haiku</code>를 실행하는 cron을 걸어요. 되긴 하지만, 창이 이미 열려 있어도 정해진 시각에 보내고, 클라우드 러너를 쓰면 토큰을 그쪽 시크릿에 복사해야 해요.</li>
-    <li><strong><a href="../">claude-warmup</a> 쓰기.</strong> 5분마다 로컬 <code>/usage</code> 명령(토큰 0)으로 확인하고, 열린 창이 없을 때만 haiku에 아주 짧은 메시지를 보내요. 내 컴퓨터나 서버에서 돌고, 로그인 정보는 읽지 않아요.</li>
+    <li><strong>직접 보내기.</strong> 창이 끝날 때마다 짧은 메시지를 보내요. 공짜지만 하루 종일 챙기기는 어려워요.</li>
+    <li><strong>정해진 시각에 도는 작업.</strong> 정해진 시각마다 <code>claude -p hi --model haiku</code>를 실행하는 cron을 걸어요. 그런데 실제 창은 내가 처음 입력한 때부터 시작돼서 정해진 시각과 어긋나요. 창이 열려 있는데 보내거나, 창 사이에 빈틈이 생겨요. 클라우드 러너를 쓰면 토큰을 그쪽 시크릿에 복사해야 하는 것도 문제예요.</li>
+    <li><strong><a href="../">claude-warmup</a> 쓰기.</strong> 5분마다 로컬 <code>/usage</code> 명령(토큰 0)으로 확인하고, 열린 창이 없을 때만 haiku에 아주 짧은 메시지를 보내요. 그래서 앞 창이 끝나면 바로 새 창이 시작돼요. 내 컴퓨터나 서버에서 돌고, 로그인 정보는 읽지 않아요.</li>
   </ol>
 
   <h2>claude-warmup으로 설정하기</h2>
@@ -93,7 +94,7 @@
   <div class="copy"><pre><code>npm install -g github:jungtaejoon/claude-warmup</code></pre><button type="button">복사</button></div>
   <div class="copy"><pre><code>claude-warmup install</code></pre><button type="button">복사</button></div>
   <div class="copy"><pre><code>claude-warmup config hours 06:00-23:00</code></pre><button type="button">복사</button></div>
-  <p>새벽에 컴퓨터가 꺼져 있다면, 늘 켜져 있는 무료 서버에서 돌리세요. <a href="../#server">서버 설치 방법</a>을 참고하세요.</p>
+  <p>마지막 명령은 창을 켜 둘 시간대를 정해요. 컴퓨터를 하루 종일 켜 둘 수 없다면, 늘 켜져 있는 무료 서버에서 돌리세요. <a href="../#server">서버 설치 방법</a>을 참고하세요.</p>
 
   <h2>알아 둘 점</h2>
   <ul>

@@ -1,7 +1,7 @@
 {
   "name": "claude-warmup",
   "version": "0.1.0",
-  "description": "Start your Claude Pro/Max 5-hour usage window early so the limit resets mid-workday: a tiny scheduled warm-up through the official Claude Code CLI, plus live session and weekly usage.",
+  "description": "Keep a Claude Pro/Max 5-hour usage window always running so your first message never starts a full 5-hour wait: a tiny warm-up through the official Claude Code CLI whenever no window is open, plus live session and weekly usage.",
   "type": "module",
   "bin": {
     "claude-warmup": "bin/claude-warmup.js"

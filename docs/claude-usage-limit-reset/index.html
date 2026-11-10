@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>When does the Claude usage limit reset? How to time the 5-hour window</title>
-<meta name="description" content="Claude Pro and Max limits reset 5 hours after the first message of a window. How to check your reset time, and how to move the reset into the middle of your workday.">
+<title>When does the Claude usage limit reset? How to stop waiting the full 5 hours</title>
+<meta name="description" content="Claude Pro and Max limits reset 5 hours after the first message of a window. How to check your reset time, and how to keep a window running so you rarely wait the full 5 hours.">
 <link rel="canonical" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
 <link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
 <link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/">
 <link rel="alternate" hreflang="x-default" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
 <meta property="og:type" content="article">
 <meta property="og:title" content="When does the Claude usage limit reset?">
-<meta property="og:description" content="How the 5-hour window works, how to see your reset time, and how to make the reset land while you work.">
+<meta property="og:description" content="How the 5-hour window works, how to see your reset time, and how to stop your first message from starting a full 5-hour wait.">
 <meta property="og:url" content="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/">
 <meta property="og:image" content="https://jungtaejoon.github.io/claude-warmup/og.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -22,8 +22,8 @@
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "When does the Claude usage limit reset? How to time the 5-hour window",
-  "description": "Claude Pro and Max limits reset 5 hours after the first message of a window. How to check your reset time, and how to move the reset into the middle of your workday.",
+  "headline": "When does the Claude usage limit reset? How to stop waiting the full 5 hours",
+  "description": "Claude Pro and Max limits reset 5 hours after the first message of a window. How to check your reset time, and how to keep a window running so you rarely wait the full 5 hours.",
   "inLanguage": "en",
   "datePublished": "2026-11-10",
   "dateModified": "2026-11-10",
@@ -51,9 +51,9 @@
   <h1>When does the Claude usage limit reset?</h1>
   <p class="meta">Guide · Claude Pro and Max · Updated November 2026</p>
 
-  <p>If you use Claude Pro or Max all day, you have probably seen "limit reached, resets at 14:00" right in the middle of your work. This guide explains how the reset is timed, how to see your own reset time, and how to move it to a better spot.</p>
+  <p>If you use Claude Pro or Max all day, you have probably seen "limit reached, resets at 14:00" right in the middle of your work. This guide explains how the reset is timed, how to see your own reset time, and how to stop waiting the full 5 hours.</p>
 
-  <div class="callout"><p><strong>Short answer:</strong> the session limit resets <strong>5 hours after the first message</strong> of a window. Send your first message at 9:00 and it resets at 14:00. Send one at 6:00 and it resets at 11:00.</p></div>
+  <div class="callout"><p><strong>Short answer:</strong> the session limit resets <strong>5 hours after the first message</strong> of a window. If that first message is yours at 9:00, it resets at 14:00. If a window was already running since 6:00, it resets at 11:00.</p></div>
 
   <h2>How the 5-hour window works</h2>
   <ul>
@@ -70,21 +70,22 @@
     <li><strong>claude-warmup:</strong> run <code>claude-warmup</code> in a terminal. It prints the same numbers as progress bars, with "resets 11:00 (in 2h 17m)".</li>
   </ul>
 
-  <h2>Why the default timing hurts</h2>
-  <p>Most people send their first message when they start work. That puts the whole morning in one window. A busy morning uses it up around noon, and the reset comes in mid-afternoon, so you lose the most productive hours waiting.</p>
+  <h2>Why your first message costs you</h2>
+  <p>If no window is running when you sit down, your first message starts a fresh 5-hour clock. Hit the limit early and you wait out nearly the whole 5 hours. This happens every time you come back after a break longer than the last window: in the morning, after lunch, in the evening.</p>
 
-  <h2>How to make the reset land while you work</h2>
-  <p>Start the window <strong>before</strong> you start working. If you start at 9:00, open the window around 6:00:</p>
+  <h2>Keep a window running all the time</h2>
+  <p>If a new window starts the moment the last one ends, a window is always already running when you sit down. Part of its 5 hours has passed, so the next reset is closer. With windows chained from 6:00:</p>
   <ul>
-    <li>6:00 to 11:00: the first window. You only use the 9:00 to 11:00 part of it.</li>
-    <li>11:00: a fresh window, just as the morning's work would have hit the limit.</li>
-    <li>16:00: another fresh window for the late afternoon.</li>
+    <li>Windows run 6:00 to 11:00, 11:00 to 16:00, 16:00 to 21:00.</li>
+    <li>Start at 9:00: the next reset is at 11:00, not 14:00.</li>
+    <li>Start at 13:00 after lunch: the next reset is at 16:00, not 18:00.</li>
   </ul>
+  <p>On average the next reset is about 2.5 hours away instead of 5.</p>
   <p>You can do this in three ways:</p>
   <ol>
-    <li><strong>By hand.</strong> Send any short message from your phone when you wake up. Free and simple, but easy to forget.</li>
-    <li><strong>With a fixed scheduled job.</strong> A cron job that runs <code>claude -p hi --model haiku</code> at 6:00. It works, but it fires at fixed times even when a window is already open, and hosted runners need your token copied into their secrets.</li>
-    <li><strong>With <a href="../">claude-warmup</a>.</strong> It checks every 5 minutes with the local <code>/usage</code> command (0 tokens) and sends one tiny haiku message only when no window is open. It runs on your own machine or server and never reads your credentials.</li>
+    <li><strong>By hand.</strong> Send a short message whenever a window ends. Free, but nobody can keep that up all day.</li>
+    <li><strong>With a fixed scheduled job.</strong> A cron job that runs <code>claude -p hi --model haiku</code> at fixed times. Real windows start whenever you first type, so fixed times drift from them, firing while a window is open or leaving gaps. Hosted runners also need your token copied into their secrets.</li>
+    <li><strong>With <a href="../">claude-warmup</a>.</strong> It checks every 5 minutes with the local <code>/usage</code> command (0 tokens) and sends one tiny haiku message only when no window is open, so a new window starts right after the last one ends. It runs on your own machine or server and never reads your credentials.</li>
   </ol>
 
   <h2>Set it up with claude-warmup</h2>
@@ -92,7 +93,7 @@
   <div class="copy"><pre><code>npm install -g github:jungtaejoon/claude-warmup</code></pre><button type="button">Copy</button></div>
   <div class="copy"><pre><code>claude-warmup install</code></pre><button type="button">Copy</button></div>
   <div class="copy"><pre><code>claude-warmup config hours 06:00-23:00</code></pre><button type="button">Copy</button></div>
-  <p>If your computer is off in the early morning, run it on a free always-on server instead. See the <a href="../#server">server setup</a>.</p>
+  <p>The last command sets the hours to keep windows running. If your computer is not on all day, run it on a free always-on server instead. See the <a href="../#server">server setup</a>.</p>
 
   <h2>Things to keep in mind</h2>
   <ul>

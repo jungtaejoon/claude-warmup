@@ -4,7 +4,7 @@
 
 **English** · [한국어](README.ko.md) · [Website](https://jungtaejoon.github.io/claude-warmup/)
 
-A tiny tool that **starts your Claude (Pro/Max) 5-hour usage window early**, so the Claude usage limit resets in the middle of your workday instead of at the end.
+A tiny tool that **keeps a Claude (Pro/Max) 5-hour usage window always running**, so your first message never starts a full 5-hour wait for the Claude usage limit to reset.
 A background check runs every few minutes, and only when no session window is active does it send one very short message ("hi", on haiku) through the official `claude` CLI.
 It also shows your current session and weekly usage, with reset times.
 
@@ -26,18 +26,18 @@ Auto warm-up
 
 ## Why
 
-Claude's session limit runs in **5-hour windows that start with your first message** ([help center](https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work)).
-Open the window before you start working, and your limit resets sooner while you are in the middle of things.
+Claude's session limit runs in **5-hour windows that start with the first message after the last window ended** ([help center](https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work)).
+If nothing is running when you sit down, your own first message starts the full 5 hours. claude-warmup starts a new window the moment the last one ends, so a window is always already running: whenever you start, part of the 5 hours has passed and the next reset is closer.
 
 ```
 No warm-up      09:00 ──────────── work ──────────── 14:00 reset
-                (first message at 9 → reset at 14)
+                (your first message at 9 starts the full 5 hours)
 
-Warm-up 06:00   06:00 ── ping ── 09:00 ── work ── 11:00 reset ── work ── 16:00 reset
-                (one window for 9–11, then a fresh one at 11)
+claude-warmup   06:00 ─ ping ─ 09:00 ─ work ─ 11:00 reset ─ work ─ 16:00 reset ─ 21:00 reset
+                (windows run back to back: start at 9 → reset at 11; start at 13 → reset at 16)
 ```
 
-- It does not raise your limits. It only lines the resets up with your working hours.
+- It does not raise your limits. You just stop starting from a full 5-hour wait. On average the next reset is about 2.5 hours away instead of 5.
 - The weekly limit is separate and resets at a fixed time. One haiku "hi" barely touches it.
 
 ## What makes it different
@@ -125,7 +125,7 @@ npx github:jungtaejoon/claude-warmup install
 | `claudePath` | auto | Path to the `claude` CLI |
 | `lang` | auto | `en` / `ko` |
 
-**Suggested setup**: if you usually start at 9, let pings start at 6. The 6:00 window resets at 11:00, and from then on each window starts right as the last one ends.
+**Suggested setup**: set the hours you want windows kept running, for example from early morning to late night. Inside those hours each window starts right as the last one ends.
 
 ```bash
 claude-warmup config hours 06:00-23:00

@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>claude-warmup: Claude 5시간 사용량 창을 미리 열어 두는 도구</title>
-<meta name="description" content="Claude Pro/Max 5시간 사용량 한도가 일하는 도중에 리셋되도록, 출근 전에 세션 창을 미리 열어 주는 무료 오픈소스 CLI. 세션·주간 사용량과 리셋 시각도 보여 줍니다. macOS, Linux, Windows, 서버 지원.">
+<title>claude-warmup: Claude 5시간 사용량 창을 늘 켜 두는 도구</title>
+<meta name="description" content="Claude Pro/Max 5시간 사용량 창을 하루 종일 이어서 열어 두어, 첫 메시지 때문에 5시간을 꽉 채워 기다리지 않게 해 주는 무료 오픈소스 CLI. 세션·주간 사용량과 리셋 시각도 보여 줍니다. macOS, Linux, Windows, 서버 지원.">
 <link rel="canonical" href="https://jungtaejoon.github.io/claude-warmup/ko/">
 <link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/">
 <link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/">
 <link rel="alternate" hreflang="x-default" href="https://jungtaejoon.github.io/claude-warmup/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="claude-warmup: Claude 5시간 창을 미리 열어 두기">
-<meta property="og:description" content="Claude 사용량 리셋을 내 작업 시간에 맞추세요. 공식 Claude Code CLI로 아주 짧은 메시지 하나를 예약 전송하고, 사용량도 보여 줍니다.">
+<meta property="og:title" content="claude-warmup: Claude 5시간 창을 늘 켜 두기">
+<meta property="og:description" content="첫 메시지를 보낸 뒤 5시간을 꽉 채워 기다리지 마세요. 창이 끝나는 대로 공식 Claude Code CLI로 아주 짧은 메시지를 보내 새 창을 열어 두고, 사용량도 보여 줍니다.">
 <meta property="og:url" content="https://jungtaejoon.github.io/claude-warmup/ko/">
 <meta property="og:image" content="https://jungtaejoon.github.io/claude-warmup/og.png">
 <meta property="og:image:width" content="1200">
@@ -29,7 +29,7 @@
   "name": "claude-warmup",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "macOS, Linux, Windows",
-  "description": "공식 Claude Code CLI로 짧은 메시지를 예약 전송해 Claude Pro/Max 5시간 사용량 창을 미리 시작하고, 세션·주간 사용량과 리셋 시각을 보여 주는 도구.",
+  "description": "열린 창이 없을 때마다 공식 Claude Code CLI로 짧은 메시지를 보내 Claude Pro/Max 5시간 사용량 창을 늘 켜 두고, 세션·주간 사용량과 리셋 시각을 보여 주는 도구.",
   "url": "https://jungtaejoon.github.io/claude-warmup/ko/",
   "downloadUrl": "https://github.com/jungtaejoon/claude-warmup",
   "codeRepository": "https://github.com/jungtaejoon/claude-warmup",
@@ -46,9 +46,9 @@
   "@type": "FAQPage",
   "mainEntity": [
     { "@type": "Question", "name": "Claude 5시간 사용량 한도는 언제 리셋되나요?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Claude 세션 한도는 첫 메시지를 보낸 순간부터 5시간 단위로 돌아갑니다. 9시에 첫 메시지를 보내면 14시에 리셋됩니다. claude-warmup은 더 이른 시각(예: 6시)에 짧은 메시지를 보내서, 리셋이 한창 일하는 11시에 오도록 맞춥니다." } },
+      "acceptedAnswer": { "@type": "Answer", "text": "Claude 세션 한도는 앞 창이 끝난 뒤 처음 보내는 메시지부터 5시간 단위로 돌아갑니다. 그 첫 메시지가 내가 9시에 보낸 것이면 14시에 리셋됩니다. claude-warmup은 창을 늘 이어서 열어 두기 때문에, 내가 시작할 때는 이미 창이 흐르고 있어 다음 리셋까지 5시간보다 짧습니다." } },
     { "@type": "Question", "name": "claude-warmup을 쓰면 Claude 사용량이 늘어나나요?",
-      "acceptedAnswer": { "@type": "Answer", "text": "아니요. 한도는 그대로이고, 5시간 리셋 시점을 작업 시간에 맞춰 옮겨 줄 뿐입니다." } },
+      "acceptedAnswer": { "@type": "Answer", "text": "아니요. 한도는 그대로예요. 창을 끊김 없이 이어 두어, 내 첫 메시지가 5시간짜리 기다림을 새로 시작하지 않게 할 뿐입니다." } },
     { "@type": "Question", "name": "워밍업 메시지는 사용량을 얼마나 쓰나요?",
       "acceptedAnswer": { "@type": "Answer", "text": "거의 쓰지 않습니다. 상태 확인은 Claude Code의 로컬 /usage 명령이라 토큰을 쓰지 않고, 워밍업은 5시간 창마다 많아야 한 번 haiku 모델에 짧은 메시지를 보내는 것이 전부입니다." } },
     { "@type": "Question", "name": "컴퓨터를 꺼 둬도 쓸 수 있나요?",
@@ -76,8 +76,8 @@
 
 <main class="wrap">
   <div class="hero">
-    <h1>출근 전에 Claude 5시간 사용량 창을 미리 열어 두세요</h1>
-    <p class="lead">Claude Pro·Max 한도는 첫 메시지 후 5시간이 지나야 리셋됩니다. <strong>claude-warmup</strong>은 일을 시작하기 전에 아주 짧은 메시지 하나를 보내서, 리셋이 하루 끝이 아니라 <strong>한창 일하는 중간</strong>에 오도록 맞춰 줍니다. 세션·주간 사용량도 한눈에 보여 줘요.</p>
+    <h1>Claude 5시간 창을 늘 켜 두면, 5시간을 꽉 채워 기다릴 일이 줄어요</h1>
+    <p class="lead">Claude Pro·Max 한도는 창의 첫 메시지 후 5시간이 지나야 리셋됩니다. 보통은 내 첫 메시지가 그 시계를 새로 시작해서, 자리에 앉는 순간부터 5시간을 꽉 채워야 하죠. <strong>claude-warmup</strong>은 창이 끝나는 대로 바로 새 창을 열어 <strong>시계가 늘 돌아가게</strong> 해요. 언제 시작하든 다음 리셋까지 5시간보다 짧아요. 세션·주간 사용량도 한눈에 보여 줘요.</p>
     <div class="cta">
       <a class="btn primary" href="#install">1분 만에 설치하기</a>
       <a class="btn ghost" href="https://github.com/jungtaejoon/claude-warmup/blob/main/README.ko.md">GitHub에서 보기</a>
@@ -96,9 +96,9 @@ Claude Warmup v0.1.0
   </div>
 
   <section id="why">
-    <h2>왜 Claude 5시간 창을 미리 열어야 하나요?</h2>
-    <p>Claude 세션 한도는 <a href="https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work">첫 메시지를 보낸 순간부터 5시간 단위</a>로 계산됩니다. 9시에 시작해서 12시에 한도에 걸리면 14시까지 기다려야 하죠. 6시에 창을 미리 열어 두면 11시에 새 창이 열립니다.</p>
-    <div class="timeline" role="img" aria-label="워밍업이 없으면 9시부터 14시까지 한 창. 6시에 워밍업하면 11시와 16시에 리셋.">
+    <h2>왜 Claude 5시간 창을 늘 켜 둬야 하나요?</h2>
+    <p>Claude 세션 한도는 앞 창이 끝난 뒤 <a href="https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work">첫 메시지를 보낸 순간부터 5시간 단위</a>로 계산됩니다. 열린 창이 없으면 내 첫 메시지가 5시간 시계를 새로 시작해요. 9시에 시작해서 12시에 한도에 걸리면 14시까지 기다려야 하죠. 내가 오기 전에 이미 창이 흐르고 있었다면, 그 5시간 중 일부는 벌써 지나 있어요.</p>
+    <div class="timeline" role="img" aria-label="워밍업이 없으면 9시 첫 메시지부터 14시까지 한 창. claude-warmup을 쓰면 창이 끊김 없이 이어져 11시, 16시, 21시에 리셋.">
       <div class="tl-row">
         <strong>워밍업 없이</strong>
         <div class="track">
@@ -106,20 +106,20 @@ Claude Warmup v0.1.0
           <div class="seg win2" style="left:53.3%;width:33.3%">14:00 → 19:00</div>
         </div>
         <div class="ticks"><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span></div>
-        <p>창 하나가 하루 대부분을 차지해요. 12시에 한도에 걸리면 14시까지 막힙니다.</p>
+        <p>내 첫 메시지가 5시간을 통째로 시작해요. 12시에 한도에 걸리면 14시까지 막힙니다.</p>
       </div>
       <div class="tl-row">
-        <strong>6시에 워밍업하면</strong>
+        <strong>claude-warmup을 쓰면</strong>
         <div class="track">
-          <div class="seg win" style="left:0;width:33.3%">핑 6:00 → 11:00</div>
+          <div class="seg win" style="left:0;width:33.3%">진행 중 6:00 → 11:00</div>
           <div class="seg win" style="left:33.3%;width:33.3%">11:00 → 16:00</div>
           <div class="seg win2" style="left:66.6%;width:33.4%">16:00 → 21:00</div>
         </div>
         <div class="ticks"><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span></div>
-        <p>오전 작업으로 첫 창을 다 쓸 즈음인 11시에 새 창이 열려요.</p>
+        <p>창이 끊김 없이 이어져요. 9시에 앉으면 지금 창은 이미 3시간이 지나 있어서 다음 리셋은 14시가 아니라 11시예요. 점심 먹고 13시에 시작해도 18시가 아니라 16시에 리셋돼요.</p>
       </div>
     </div>
-    <p>한도가 늘어나는 건 아니에요. 리셋 시점을 쓸모 있는 곳으로 옮길 뿐입니다.</p>
+    <p>한도가 늘어나는 건 아니에요. 언제 앉든 5시간을 처음부터 꽉 채워 기다리는 일이 없어질 뿐이에요.</p>
   </section>
 
   <section id="different">
@@ -159,7 +159,7 @@ Claude Warmup v0.1.0
     <p>Node.js 18 이상과, Pro·Max 구독 계정으로 로그인한 <a href="https://code.claude.com/docs/en/setup">Claude Code CLI</a>가 필요합니다.</p>
     <div class="copy"><pre><code>npm install -g github:jungtaejoon/claude-warmup</code></pre><button type="button">복사</button></div>
     <div class="copy"><pre><code>claude-warmup install</code></pre><button type="button">복사</button></div>
-    <p>추천: 9시에 일을 시작한다면 6시부터 핑을 보내게 하세요.</p>
+    <p>창을 켜 둘 시간대를 정하세요. 예를 들어 이른 아침부터 밤까지:</p>
     <div class="copy"><pre><code>claude-warmup config hours 06:00-23:00</code></pre><button type="button">복사</button></div>
 
     <h3 id="server">무료 서버에서 돌리기</h3>
@@ -170,8 +170,8 @@ Claude Warmup v0.1.0
 
   <section id="faq">
     <h2>자주 묻는 질문</h2>
-    <details open><summary>Claude 5시간 사용량 한도는 언제 리셋되나요?</summary><p>창의 첫 메시지로부터 5시간 뒤예요. 9시에 첫 메시지를 보내면 14시에 리셋되고, 6시에 워밍업하면 11시로 당겨집니다. 자세한 내용은 <a href="claude-usage-limit-reset/">Claude 사용량 한도 리셋 가이드</a>에 있어요.</p></details>
-    <details><summary>사용량이 늘어나나요?</summary><p>아니요. 같은 한도를 작업 시간에 더 잘 맞게 배치할 뿐이에요.</p></details>
+    <details open><summary>Claude 5시간 사용량 한도는 언제 리셋되나요?</summary><p>창의 첫 메시지로부터 5시간 뒤예요. 그 첫 메시지가 내가 9시에 보낸 것이면 14시에 리셋돼요. claude-warmup을 쓰면 시작할 때 이미 창이 흐르고 있어서 리셋이 더 빨리 와요. 자세한 내용은 <a href="claude-usage-limit-reset/">Claude 사용량 한도 리셋 가이드</a>에 있어요.</p></details>
+    <details><summary>사용량이 늘어나나요?</summary><p>아니요. 한도는 같아요. 5시간을 꽉 채워 기다릴 일이 드물어질 뿐이에요.</p></details>
     <details><summary>워밍업은 사용량을 얼마나 쓰나요?</summary><p>거의 안 써요. 확인은 로컬 <code>/usage</code> 명령(토큰 0)이고, 핑은 창마다 haiku 짧은 메시지 하나예요.</p></details>
     <details><summary>컴퓨터를 꺼 둬도 되나요?</summary><p>네, 서버에서 돌리면 됩니다. <a href="#server">무료 서버에서 돌리기</a>를 보세요.</p></details>
     <details><summary>Claude 비밀번호나 토큰을 읽나요?</summary><p>아니요. 로그인은 전부 공식 <code>claude</code> CLI가 처리해요.</p></details>

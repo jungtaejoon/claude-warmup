@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>claude-warmup: start your Claude 5-hour usage window early</title>
-<meta name="description" content="Free, open-source CLI that starts your Claude Pro/Max 5-hour session window before you begin work, so the usage limit resets while you are working. Shows session and weekly usage. macOS, Linux, Windows and servers.">
+<title>claude-warmup: keep your Claude 5-hour usage window always running</title>
+<meta name="description" content="Free, open-source CLI that keeps a Claude Pro/Max 5-hour usage window running all day, so your first message never starts a full 5-hour wait for the limit to reset. Shows session and weekly usage. macOS, Linux, Windows and servers.">
 <link rel="canonical" href="https://jungtaejoon.github.io/claude-warmup/">
 <link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/">
 <link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/">
 <link rel="alternate" hreflang="x-default" href="https://jungtaejoon.github.io/claude-warmup/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="claude-warmup: start your Claude 5-hour window early">
-<meta property="og:description" content="Line up Claude's 5-hour usage resets with your working hours. One tiny scheduled message through the official Claude Code CLI, plus live usage status.">
+<meta property="og:title" content="claude-warmup: keep your Claude 5-hour window always running">
+<meta property="og:description" content="Stop waiting a full 5 hours after your first Claude message. claude-warmup starts a new window the moment the last one ends, with one tiny message through the official Claude Code CLI, plus live usage status.">
 <meta property="og:url" content="https://jungtaejoon.github.io/claude-warmup/">
 <meta property="og:image" content="https://jungtaejoon.github.io/claude-warmup/og.png">
 <meta property="og:image:width" content="1200">
@@ -29,7 +29,7 @@
   "name": "claude-warmup",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "macOS, Linux, Windows",
-  "description": "Starts your Claude Pro/Max 5-hour usage window early with one tiny scheduled message through the official Claude Code CLI, and shows session and weekly usage with reset times.",
+  "description": "Keeps a Claude Pro/Max 5-hour usage window always running by sending one tiny message through the official Claude Code CLI whenever no window is active, and shows session and weekly usage with reset times.",
   "url": "https://jungtaejoon.github.io/claude-warmup/",
   "downloadUrl": "https://github.com/jungtaejoon/claude-warmup",
   "codeRepository": "https://github.com/jungtaejoon/claude-warmup",
@@ -46,9 +46,9 @@
   "@type": "FAQPage",
   "mainEntity": [
     { "@type": "Question", "name": "When does the Claude 5-hour usage limit reset?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Claude's session limit runs in 5-hour windows that start with your first message. If your first message is at 9:00, the window resets at 14:00. claude-warmup sends a tiny message earlier (for example at 6:00), so the reset lands at 11:00, in the middle of your workday." } },
+      "acceptedAnswer": { "@type": "Answer", "text": "Claude's session limit runs in 5-hour windows that start with the first message after the previous window ended. If that first message is yours at 9:00, the limit resets at 14:00. claude-warmup keeps a window running all the time, so when you start, the current window has already been running and the next reset is less than 5 hours away." } },
     { "@type": "Question", "name": "Does claude-warmup give me more Claude usage?",
-      "acceptedAnswer": { "@type": "Answer", "text": "No. Your limits stay the same. It only moves the 5-hour resets so they line up with your working hours." } },
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Your limits stay the same. It keeps windows running back to back, so your first message no longer starts a full 5-hour wait." } },
     { "@type": "Question", "name": "How much usage does the warm-up message cost?",
       "acceptedAnswer": { "@type": "Answer", "text": "Almost none. Checks use the local /usage command of Claude Code, which uses 0 tokens. The warm-up itself is one short message to the haiku model, sent at most once per 5-hour window." } },
     { "@type": "Question", "name": "Can I run it when my computer is off?",
@@ -76,8 +76,8 @@
 
 <main class="wrap">
   <div class="hero">
-    <h1>Start your Claude 5-hour usage window before you start work</h1>
-    <p class="lead">Claude Pro and Max limits reset 5 hours after your first message. <strong>claude-warmup</strong> sends one tiny message early, so the reset lands in the middle of your workday instead of at the end. It also shows your session and weekly usage.</p>
+    <h1>Keep a Claude 5-hour window always running, so you never wait the full 5 hours</h1>
+    <p class="lead">Claude Pro and Max limits reset 5 hours after the first message of a window. Usually that first message is yours, so a full 5-hour clock starts the moment you sit down. <strong>claude-warmup</strong> starts a new window the moment the last one ends, so the clock is always already running. Whenever you start, the next reset is less than 5 hours away. It also shows your session and weekly usage.</p>
     <div class="cta">
       <a class="btn primary" href="#install">Install in 1 minute</a>
       <a class="btn ghost" href="https://github.com/jungtaejoon/claude-warmup">View on GitHub</a>
@@ -96,9 +96,9 @@ Auto warm-up
   </div>
 
   <section id="why">
-    <h2>Why warm up the Claude 5-hour window?</h2>
-    <p>Claude's session limit is counted in <a href="https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work">5-hour windows that begin with your first message</a>. Start at 9:00 and hit the limit at noon, and you wait until 14:00. Open the window at 6:00 instead, and you get a fresh one at 11:00.</p>
-    <div class="timeline" role="img" aria-label="Without warm-up the window runs 9 to 14. With a 6:00 warm-up, windows reset at 11 and 16.">
+    <h2>Why keep the Claude 5-hour window running?</h2>
+    <p>Claude's session limit is counted in <a href="https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work">5-hour windows that begin with the first message</a> after the last window ended. If nothing is running, your own first message starts a fresh 5-hour clock: start at 9:00, hit the limit at noon, and you wait until 14:00. If a window is already running when you arrive, part of those 5 hours has already passed.</p>
+    <div class="timeline" role="img" aria-label="Without warm-up your first message at 9 starts a window that runs to 14. With claude-warmup, windows run back to back and reset at 11, 16 and 21.">
       <div class="tl-row">
         <strong>Without warm-up</strong>
         <div class="track">
@@ -106,20 +106,20 @@ Auto warm-up
           <div class="seg win2" style="left:53.3%;width:33.3%">14:00 → 19:00</div>
         </div>
         <div class="ticks"><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span></div>
-        <p>One window covers most of the day. Hit the limit at noon and you are stuck until 14:00.</p>
+        <p>Your first message starts the full 5 hours. Hit the limit at noon and you are stuck until 14:00.</p>
       </div>
       <div class="tl-row">
-        <strong>With a 6:00 warm-up</strong>
+        <strong>With claude-warmup</strong>
         <div class="track">
-          <div class="seg win" style="left:0;width:33.3%">ping 6:00 → 11:00</div>
+          <div class="seg win" style="left:0;width:33.3%">running 6:00 → 11:00</div>
           <div class="seg win" style="left:33.3%;width:33.3%">11:00 → 16:00</div>
           <div class="seg win2" style="left:66.6%;width:33.4%">16:00 → 21:00</div>
         </div>
         <div class="ticks"><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span></div>
-        <p>A fresh window at 11:00, right when the morning's work has used up the first one.</p>
+        <p>Windows run back to back. At 9:00 the current one has already run 3 hours, so the next reset is at 11:00, not 14:00. Start after lunch at 13:00 and it is at 16:00, not 18:00.</p>
       </div>
     </div>
-    <p>Your limits do not grow. The resets just move to where they help.</p>
+    <p>Your limits do not grow. You just stop starting from a full 5-hour wait, whenever you sit down.</p>
   </section>
 
   <section id="different">
@@ -159,7 +159,7 @@ Auto warm-up
     <p>You need Node.js 18+ and the <a href="https://code.claude.com/docs/en/setup">Claude Code CLI</a>, logged in with a Pro or Max subscription.</p>
     <div class="copy"><pre><code>npm install -g github:jungtaejoon/claude-warmup</code></pre><button type="button">Copy</button></div>
     <div class="copy"><pre><code>claude-warmup install</code></pre><button type="button">Copy</button></div>
-    <p>Suggested: if you start at 9, let pings begin at 6.</p>
+    <p>Choose the hours to keep windows running, for example from early morning to late night:</p>
     <div class="copy"><pre><code>claude-warmup config hours 06:00-23:00</code></pre><button type="button">Copy</button></div>
 
     <h3 id="server">Run it on a free server</h3>
@@ -170,8 +170,8 @@ Auto warm-up
 
   <section id="faq">
     <h2>FAQ</h2>
-    <details open><summary>When does the Claude 5-hour usage limit reset?</summary><p>5 hours after the first message of a window. First message at 9:00 means a reset at 14:00. A warm-up at 6:00 moves it to 11:00. More in the <a href="claude-usage-limit-reset/">Claude usage limit reset guide</a>.</p></details>
-    <details><summary>Does this give me more Claude usage?</summary><p>No. Same limits, placed better for your working hours.</p></details>
+    <details open><summary>When does the Claude 5-hour usage limit reset?</summary><p>5 hours after the first message of a window. If that first message is yours at 9:00, the reset is at 14:00. With claude-warmup a window is already running when you start, so the reset comes sooner. More in the <a href="claude-usage-limit-reset/">Claude usage limit reset guide</a>.</p></details>
+    <details><summary>Does this give me more Claude usage?</summary><p>No. Same limits. You just rarely wait the full 5 hours.</p></details>
     <details><summary>How much usage does the warm-up cost?</summary><p>Almost none. Checks use the local <code>/usage</code> command (0 tokens). The ping is one short haiku message per window.</p></details>
     <details><summary>Can I run it while my computer is off?</summary><p>Yes, on a server. See <a href="#server">Run it on a free server</a>.</p></details>
     <details><summary>Does it read my Claude password or token?</summary><p>No. The official <code>claude</code> CLI handles all sign-in.</p></details>
