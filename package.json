@@ -1,6 +1,6 @@
 {
   "name": "claude-warmup",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Keep a Claude Pro/Max 5-hour usage window always running so your first message never starts a full 5-hour wait: a tiny warm-up through the official Claude Code CLI whenever no window is open, plus live session and weekly usage.",
   "type": "module",
   "bin": {

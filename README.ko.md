@@ -10,7 +10,7 @@ Claude(Pro/Max) 의 **5시간 사용 창을 미리 시작해 두는** 작은 도
 
 ```
 $ claude-warmup
-Claude Warmup v0.1.0
+Claude Warmup v0.2.0
 
 사용량  08:42 확인 · claude /usage
   현재 세션 (5시간)  █████░░░░░░░░░░░░░░░  23%  11:00 리셋 (2시간 17분 후)

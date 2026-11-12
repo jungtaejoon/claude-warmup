@@ -10,7 +10,7 @@ It also shows your current session and weekly usage, with reset times.
 
 ```
 $ claude-warmup
-Claude Warmup v0.1.0
+Claude Warmup v0.2.0
 
 Usage  checked 08:42 · claude /usage
   Current session (5h)  █████░░░░░░░░░░░░░░░  23%  resets 11:00 (in 2h 17m)
