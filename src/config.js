@@ -1,7 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import { readJson, writeJsonAtomic } from './state.js';
-import { parseHours, formatHours, parseDays, formatDays } from './time.js';
+import { parseHours, formatHours, parseDays, formatDays, parseHM, formatHM } from './time.js';
 
 export const DEFAULTS = Object.freeze({
   hours: 'always', // when pings may be sent: "always" or "HH:MM-HH:MM" (overnight ranges OK)
@@ -11,6 +11,7 @@ export const DEFAULTS = Object.freeze({
   interval: 5, // minutes between background checks
   claudePath: '', // '' = auto-detect
   lang: '', // '' = auto, 'en', 'ko'
+  peak: '', // '' = off; "HH:MM" = line windows up so one resets right at this time
 });
 
 export const CONFIG_KEYS = Object.keys(DEFAULTS);
@@ -48,6 +49,12 @@ export function validateConfigValue(key, input) {
       if (v === '' || v === 'auto') return { ok: true, value: '' };
       return v === 'en' || v === 'ko' ? { ok: true, value: v } : { ok: false };
     }
+    case 'peak': {
+      const v = raw.toLowerCase();
+      if (['', 'off', 'none', 'no', '끄기'].includes(v)) return { ok: true, value: '' };
+      const m = parseHM(raw);
+      return m === null ? { ok: false } : { ok: true, value: formatHM(m % 1440) };
+    }
     default:
       return { ok: false };
   }
@@ -70,6 +77,11 @@ export function saveConfig(paths, cfg) {
   const out = {};
   for (const key of CONFIG_KEYS) out[key] = cfg[key] ?? DEFAULTS[key];
   writeJsonAtomic(paths.configFile, out);
+}
+
+/** Peak time in minutes after midnight, or null when off. */
+export function getPeak(cfg) {
+  return cfg.peak ? parseHM(cfg.peak) : null;
 }
 
 export function getSchedule(cfg) {

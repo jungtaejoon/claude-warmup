@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { getPaths } from './paths.js';
-import { loadConfig, saveConfig, validateConfigValue, CONFIG_KEYS, DEFAULTS, getSchedule } from './config.js';
+import { loadConfig, saveConfig, validateConfigValue, CONFIG_KEYS, DEFAULTS, getSchedule, getPeak } from './config.js';
 import { detectLang, setLang, t, has } from './i18n.js';
 import { loadState, saveState, acquireLock, releaseLock, waitForLock } from './state.js';
 import { appendLog, readLog } from './log.js';
@@ -8,8 +8,8 @@ import { findClaude, fetchUsage, authStatus, isDesktopBundled } from './claude.j
 import { getClaudeInfo, ensureWorkDir, doPing, runTick, applyUsageToState, hydrateUsage } from './engine.js';
 import { getBackend, buildPathEnv, stableNodePath } from './service/index.js';
 import { installAppCopy } from './selfcopy.js';
-import { nextScheduledStart, MINUTE, HOUR, parseHours, formatHM } from './time.js';
-import { RESET_MARGIN_MS, WINDOW_MS } from './scheduler.js';
+import { nextScheduledStart, isScheduledAt, MINUTE, HOUR, parseHours, formatHM } from './time.js';
+import { RESET_MARGIN_MS, WINDOW_MS, nextPeakSlot } from './scheduler.js';
 import * as fmt from './format.js';
 import { VERSION } from './version.js';
 
@@ -116,6 +116,20 @@ export function describeSchedule(config) {
   return `${h} · ${d}`;
 }
 
+/** Times of day (inside the schedule's hours) when peak mode may start a window: peak − 5h·k. */
+export function peakSlotTimes(config) {
+  const peakMin = getPeak(config);
+  if (peakMin === null) return [];
+  const hours = parseHours(config.hours) || { always: true };
+  const out = [];
+  for (let k = 1; k <= 4; k++) {
+    const m = (((peakMin - k * 300) % 1440) + 1440) % 1440;
+    const d = new Date(2026, 0, 5, Math.floor(m / 60), m % 60);
+    if (isScheduledAt(d.getTime(), { hours, days: new Set([0, 1, 2, 3, 4, 5, 6]) })) out.push(m);
+  }
+  return out.sort((a, b) => a - b).map(formatHM);
+}
+
 function describeTick(r, now = Date.now()) {
   if (r.action === 'ping') {
     return r.result.ok
@@ -131,6 +145,7 @@ function describeTick(r, now = Date.now()) {
     case 'recheck_later':
     case 'no_session_limit': return t('tickNoSessionLimit');
     case 'locked': return t('tickLocked');
+    case 'peak_wait': return t('tickPeakWait', { when: fmt.fmtWhen(r.until, now), peak: fmt.fmtClock(r.peakAt) });
     default: return String(r.reason);
   }
 }
@@ -161,6 +176,13 @@ export function computeNext({ now, config, state, svc, session }) {
   if (session) windowEnd = session.active ? session.resetsAt : null;
   else windowEnd = state.windowEndsAt && state.windowEndsAt > now ? state.windowEndsAt : null;
   const base = windowEnd ? windowEnd + RESET_MARGIN_MS : now;
+  const peakMin = getPeak(config);
+  if (peakMin !== null) {
+    const slot = nextPeakSlot(base, peakMin, getSchedule(config), { earlyMs: config.interval * MINUTE });
+    if (!slot) return { kind: 'never' };
+    if (slot.at <= now + MINUTE) return { kind: 'soon', within: config.interval };
+    return { kind: 'peakSlot', at: slot.at, peakAt: slot.peakAt };
+  }
   const at = nextScheduledStart(base, getSchedule(config));
   if (at === null) return { kind: 'never' };
   if (!windowEnd && at <= now + MINUTE) return { kind: 'soon', within: config.interval };
@@ -176,6 +198,7 @@ function describeNext(next, now) {
     case 'never': return t('nextNever');
     case 'soon': return t('nextSoon', { n: next.within });
     case 'afterWindow': return t('nextAfterWindow', { when: fmt.fmtWhen(next.at, now) });
+    case 'peakSlot': return t('nextPeakSlot', { when: fmt.fmtWhen(next.at, now), peak: fmt.fmtClock(next.peakAt) });
     default: return t('nextScheduleStart', { when: fmt.fmtWhen(next.at, now) });
   }
 }
@@ -229,6 +252,7 @@ function renderStatus(m) {
   const rows = [
     [t('lblStatus'), statusText],
     [t('lblSchedule'), describeSchedule(m.config)],
+    ...(m.config.peak ? [[t('lblPeak'), t('peakRow', { peak: m.config.peak, slots: peakSlotTimes(m.config).join(', ') })]] : []),
     [t('lblLastPing'), describeLastPing(m.lastPing, m.now)],
     [t('lblNextPing'), describeNext(m.next, m.now)],
   ];
@@ -451,6 +475,7 @@ async function cmdConfig({ paths, config, args, opts }) {
   }
   const show = (k, v) => {
     if (v !== '') return String(v);
+    if (k === 'peak') return t('peakOff');
     return k === 'model' ? t('modelDefault') : t('configAuto');
   };
 
@@ -486,6 +511,22 @@ async function cmdConfig({ paths, config, args, opts }) {
     const now = Date.now();
     const at = nextScheduledStart(now, getSchedule(config));
     if (at && at > now + MINUTE) console.log(`  ${t('configNextStart', { when: fmt.fmtWhen(at, now) })}`);
+  }
+  if (key === 'peak' || key === 'hours') {
+    // A wait computed for the old setting must not hold back the new one.
+    const state = loadState(paths);
+    if (state.peakWaitUntil) {
+      state.peakWaitUntil = null;
+      saveState(paths, state);
+    }
+  }
+  if (key === 'peak') {
+    if (config.peak) {
+      console.log(`  ${t('configPeakOn', { slots: peakSlotTimes(config).join(', ') || '—', peak: config.peak })}`);
+      console.log(fmt.color.dim(`  ${t('configPeakNote')}`));
+    } else {
+      console.log(`  ${t('configPeakOff')}`);
+    }
   }
   if (key === 'interval' || key === 'claudePath') {
     const svc = await serviceStatus();

@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import { loadState, saveState, acquireLock, releaseLock, waitForLock } from './state.js';
 import { appendLog } from './log.js';
 import { findClaude, getVersion, getFlags, ping, fetchUsage } from './claude.js';
-import { precheck, decideWithUsage, backoffMs, windowEndAfterPing, WINDOW_MS } from './scheduler.js';
-import { getSchedule } from './config.js';
+import { precheck, decideWithUsage, backoffMs, windowEndAfterPing, peakGate, WINDOW_MS } from './scheduler.js';
+import { getSchedule, getPeak } from './config.js';
 import { pickSession } from './usage.js';
 import { HOUR, MINUTE } from './time.js';
 
@@ -97,6 +97,7 @@ export async function doPing({ paths, config, state, info, reason }) {
     state.backoffUntil = null;
     state.blockedUntil = null;
     state.recheckAt = null;
+    state.peakWaitUntil = null;
   } else {
     state.failures = (state.failures || 0) + 1;
     if (res.errorKind === 'rate_limited') {
@@ -179,7 +180,15 @@ export async function runTick({ paths, config, now = Date.now(), waitLockMs = 0 
       return { action: 'error', reason: 'not_logged_in' };
     }
 
-    const decision = decideWithUsage({ now: checkedAt, usage });
+    let decision = decideWithUsage({ now: checkedAt, usage });
+    const peakMin = getPeak(config);
+    if (decision.action === 'ping' && peakMin !== null) {
+      // Peak mode: start a window only at a slot that lines the resets up with the peak.
+      const gate = peakGate({ now: checkedAt, peakMin, earlyMs: config.interval * MINUTE });
+      decision = gate.ok
+        ? { action: 'ping', reason: 'peak_slot', peakAt: gate.peakAt }
+        : { action: 'skip', reason: 'peak_wait', until: gate.until, peakAt: gate.peakAt };
+    }
     appendLog(paths, {
       ev: 'check',
       usage: usage.ok,
@@ -189,6 +198,7 @@ export async function runTick({ paths, config, now = Date.now(), waitLockMs = 0 
     });
     if (decision.action === 'skip') {
       if (decision.reason === 'no_session_limit') state.recheckAt = decision.until;
+      if (decision.reason === 'peak_wait') state.peakWaitUntil = decision.until;
       saveState(paths, state);
       return decision;
     }

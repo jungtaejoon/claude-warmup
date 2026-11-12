@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs, computeNext, describeSchedule, rowLabel } from '../src/cli.js';
+import { parseArgs, computeNext, describeSchedule, rowLabel, peakSlotTimes } from '../src/cli.js';
 import { MESSAGES, setLang, detectLang, t } from '../src/i18n.js';
 import { strWidth, fmtDuration, shortModel, pad } from '../src/format.js';
 import { DEFAULTS } from '../src/config.js';
@@ -109,4 +109,21 @@ test('the CLI runs end to end against the fake claude', (t) => {
   assert.match(short.stdout, /week 41%/);
 
   assert.equal(run('nope').status, 2);
+});
+
+test('peakSlotTimes lists the aligned ping times inside the hours', () => {
+  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '14:00' }), ['04:00', '09:00', '18:00', '23:00']);
+  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '14:00', hours: '06:00-23:00' }), ['09:00', '18:00']);
+  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '' }), []);
+});
+
+test('computeNext with a peak time points at the next aligned slot', () => {
+  const now = new Date(2026, 10, 9, 10, 30).getTime();
+  const svc = { active: true };
+  const next = computeNext({ now, config: { ...DEFAULTS, peak: '14:00' }, state: {}, svc, session: { active: false } });
+  assert.equal(next.kind, 'peakSlot');
+  assert.equal(next.at, new Date(2026, 10, 9, 18, 0).getTime() - 5 * 60e3);
+  // a window you started yourself until 12:00 -> still the 18:00 slot (12:00 is off-slot)
+  const busy = computeNext({ now, config: { ...DEFAULTS, peak: '14:00' }, state: {}, svc, session: { active: true, resetsAt: new Date(2026, 10, 9, 12, 0).getTime() } });
+  assert.equal(busy.at, next.at);
 });

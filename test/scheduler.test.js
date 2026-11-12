@@ -53,3 +53,47 @@ test('windowEndAfterPing trusts sane server times and estimates otherwise', () =
   assert.equal(windowEndAfterPing(now - 1, now), now + ESTIMATE_WINDOW_MS);
   assert.equal(windowEndAfterPing(now + 10 * HOUR, now), now + WINDOW_MS + 5 * MINUTE);
 });
+
+// ---------- peak time ----------
+import { peakSlots, peakGate, nextPeakSlot, PEAK_LATE_MS } from '../src/scheduler.js';
+
+const at = (h, m = 0, day = 9) => new Date(2026, 10, day, h, m).getTime();
+const P14 = 14 * 60;
+
+test('peakSlots: peak − 5h·k, for the peaks around now', () => {
+  const slots = peakSlots(at(10), P14).filter((s) => s.peakAt === at(14));
+  assert.deepEqual(slots.map((s) => s.at), [at(18, 0, 8), at(23, 0, 8), at(4), at(9)]);
+});
+
+test('peakGate: pings at the slot, a little early, or a little late', () => {
+  assert.equal(peakGate({ now: at(9), peakMin: P14 }).ok, true);
+  assert.equal(peakGate({ now: at(8, 57), peakMin: P14 }).ok, true);
+  assert.equal(peakGate({ now: at(9) + PEAK_LATE_MS, peakMin: P14 }).ok, true);
+  const hit = peakGate({ now: at(9, 10), peakMin: P14 });
+  assert.equal(hit.slot, at(9));
+  assert.equal(hit.peakAt, at(14));
+});
+
+test('peakGate: off-slot waits for the next slot instead of starting a misaligned window', () => {
+  const r = peakGate({ now: at(10, 30), peakMin: P14 });
+  assert.equal(r.ok, false);
+  assert.equal(r.until, at(18) - 5 * MINUTE); // next slot lines up with tomorrow's 14:00
+  assert.equal(r.peakAt, at(14, 0, 10));
+  const r2 = peakGate({ now: at(5), peakMin: P14 });
+  assert.equal(r2.until, at(9) - 5 * MINUTE);
+  assert.equal(r2.peakAt, at(14));
+});
+
+test('nextPeakSlot skips slots outside the schedule', () => {
+  const sched = { hours: parseHours('06:00-23:00'), days: parseDays('everyday') };
+  // 23:00 (end, exclusive) and 04:00 are outside, so after 18:00 the next one is 09:00
+  const r = nextPeakSlot(at(19), P14, sched, { earlyMs: 0 });
+  assert.equal(r.at, at(9, 0, 10));
+  assert.equal(r.peakAt, at(14, 0, 10));
+  assert.equal(nextPeakSlot(at(8), P14, always, { earlyMs: 0 }).at, at(9));
+});
+
+test('precheck: a peak wait costs no network call', () => {
+  const r = precheck({ now, schedule: always, state: { peakWaitUntil: now + HOUR } });
+  assert.deepEqual(r, { action: 'skip', reason: 'peak_wait', until: now + HOUR });
+});

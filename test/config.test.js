@@ -61,3 +61,12 @@ test('getPaths per platform', () => {
   assert.equal(getPaths({}, 'win32', winHome).configDir, 'C:\\Users\\u\\AppData\\Roaming\\claude-warmup');
   assert.equal(getPaths({ APPDATA: 'C:\\R', LOCALAPPDATA: 'C:\\L' }, 'win32', winHome).stateFile, 'C:\\L\\claude-warmup\\state.json');
 });
+
+test('peak: off or HH:MM', () => {
+  assert.deepEqual(validateConfigValue('peak', '14:00'), { ok: true, value: '14:00' });
+  assert.deepEqual(validateConfigValue('peak', '930'), { ok: true, value: '09:30' });
+  assert.deepEqual(validateConfigValue('peak', 'off'), { ok: true, value: '' });
+  assert.deepEqual(validateConfigValue('peak', ''), { ok: true, value: '' });
+  assert.equal(validateConfigValue('peak', '25:00').ok, false);
+  assert.equal(validateConfigValue('peak', 'noon').ok, false);
+});

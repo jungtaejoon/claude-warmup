@@ -27,7 +27,8 @@ Options
 Examples
   claude-warmup install
   claude-warmup config hours 06:00-23:00
-  claude-warmup config days weekdays`,
+  claude-warmup config days weekdays
+  claude-warmup config peak 14:00`,
 
   usageHeader: 'Usage',
   usageLive: 'checked {time} · claude /usage',
@@ -43,6 +44,9 @@ Examples
   lblStatus: 'Status',
   lblSchedule: 'Schedule',
   lblLastPing: 'Last ping',
+  lblPeak: 'Peak time',
+  peakOff: 'off',
+  peakRow: '{peak} · pings only at {slots}, so a window resets right at {peak}',
   lblNextPing: 'Next ping',
   svcOn: 'on ({backend}, checks every {n} min)',
   svcBroken: 'installed but not running: run claude-warmup install again',
@@ -55,6 +59,7 @@ Examples
   nextSoon: 'at the next check (within {n} min)',
   nextAfterWindow: '~{when}, right after the current window resets',
   nextScheduleStart: '~{when}, when your schedule starts',
+  nextPeakSlot: '~{when}, lined up so a window resets at {peak}',
   hoursAlways: 'all day',
   daysEveryday: 'every day',
   daysWeekdays: 'weekdays',
@@ -114,6 +119,7 @@ Examples
   tickBlocked: 'usage limit reached, paused until {when}',
   tickNoSessionLimit: 'your plan reports no 5-hour session limit, nothing to do',
   tickLocked: 'another check is running',
+  tickPeakWait: 'no window is open, but waiting until {when} so the next reset lands at {peak}',
 
   configHeader: 'Settings ({file})',
   configAuto: '(auto)',
@@ -125,6 +131,10 @@ Examples
   configDesc_interval: 'minutes between background checks, 1-60 (run install again to apply)',
   configDesc_claudePath: 'path to the claude CLI (auto = detect)',
   configDesc_lang: 'output language: auto | en | ko',
+  configDesc_peak: 'off | HH:MM: your busiest time; windows line up so one resets right then (e.g. 14:00)',
+  configPeakOn: 'Pings now go out only at {slots}, so a window resets right at {peak}.',
+  configPeakNote: 'If you start a window yourself at another time, it cannot be moved; things line up again after it ends.',
+  configPeakOff: 'Peak time off: a new window starts as soon as the last one ends.',
   configUnknownKey: 'Unknown setting "{key}". Settings: {keys}',
   configInvalid: 'Invalid value for {key}. Expected: {hint}',
   configReset: 'Settings reset to defaults.',
@@ -182,6 +192,7 @@ Examples
   reason_no_active_window: 'no active window',
   reason_usage_unavailable: 'usage unknown',
   reason_manual: 'manual',
+  reason_peak_slot: 'lined up for the peak time',
 };
 
 const ko = {
@@ -211,7 +222,8 @@ const ko = {
 예시
   claude-warmup install
   claude-warmup config hours 06:00-23:00
-  claude-warmup config days weekdays`,
+  claude-warmup config days weekdays
+  claude-warmup config peak 14:00`,
 
   usageHeader: '사용량',
   usageLive: '{time} 확인 · claude /usage',
@@ -226,6 +238,9 @@ const ko = {
   autoHeader: '자동 워밍업',
   lblStatus: '상태',
   lblSchedule: '스케줄',
+  lblPeak: '피크 시간',
+  peakOff: '끔',
+  peakRow: '{peak} · {slots}에만 핑을 보내서 {peak}에 창이 딱 리셋되게 맞춰요',
   lblLastPing: '마지막 핑',
   lblNextPing: '다음 핑',
   svcOn: '켜짐 ({backend}, {n}분마다 확인)',
@@ -239,6 +254,7 @@ const ko = {
   nextSoon: '다음 확인 때 ({n}분 이내)',
   nextAfterWindow: '{when}경, 지금 세션이 끝나면 바로',
   nextScheduleStart: '{when}경, 스케줄이 시작될 때',
+  nextPeakSlot: '{when}경, {peak}에 리셋되도록 맞춰서',
   hoursAlways: '하루 종일',
   daysEveryday: '매일',
   daysWeekdays: '평일',
@@ -294,6 +310,7 @@ const ko = {
   tickError: '오류: {reason}',
   tickWindowActive: '이미 {when}까지 활성 세션이 있어요. 끝나면 바로 핑을 보내요',
   tickOutside: '스케줄 시간이 아니라서 지금은 할 일이 없어요',
+  tickPeakWait: '열린 창은 없지만, 다음 리셋이 {peak}에 오도록 {when}까지 기다려요',
   tickBackoff: '오류 후 대기 중, {when} 이후 재시도',
   tickBlocked: '사용 한도 도달, {when}까지 대기',
   tickNoSessionLimit: '요금제에 5시간 세션 한도가 없어서 할 일이 없어요',
@@ -309,6 +326,10 @@ const ko = {
   configDesc_interval: '백그라운드 확인 주기(분), 1-60 (적용하려면 install 다시 실행)',
   configDesc_claudePath: 'claude CLI 경로 (auto = 자동 탐지)',
   configDesc_lang: '출력 언어: auto | en | ko',
+  configDesc_peak: 'off | HH:MM: 가장 바쁜 시각. 이때 창이 딱 리셋되게 맞춰요 (예: 14:00)',
+  configPeakOn: '이제 {slots}에만 핑을 보내서, {peak}에 창이 딱 리셋되게 맞춰요.',
+  configPeakNote: '내가 다른 시각에 직접 창을 시작했다면 그 창은 옮길 수 없어요. 그 창이 끝난 뒤 다시 맞춰요.',
+  configPeakOff: '피크 시간을 껐어요. 창이 끝나면 바로 새 창을 열어요.',
   configUnknownKey: '알 수 없는 설정 "{key}". 가능한 설정: {keys}',
   configInvalid: '{key} 값이 올바르지 않아요. 형식: {hint}',
   configReset: '설정을 기본값으로 되돌렸어요.',
@@ -366,6 +387,7 @@ const ko = {
   reason_no_active_window: '활성 세션 없음',
   reason_usage_unavailable: '사용량 확인 불가',
   reason_manual: '수동',
+  reason_peak_slot: '피크 시간 맞춤',
 };
 
 export const MESSAGES = { en, ko };

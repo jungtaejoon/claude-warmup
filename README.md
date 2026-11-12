@@ -124,12 +124,27 @@ npx github:jungtaejoon/claude-warmup install
 | `interval` | `5` | Minutes between background checks; run `install` again after changing it |
 | `claudePath` | auto | Path to the `claude` CLI |
 | `lang` | auto | `en` / `ko` |
+| `peak` | off | Your busiest time, e.g. `14:00`: windows line up so one resets right then ([peak time](#peak-time)) |
 
 **Suggested setup**: set the hours you want windows kept running, for example from early morning to late night. Inside those hours each window starts right as the last one ends.
 
 ```bash
 claude-warmup config hours 06:00-23:00
 ```
+
+### Peak time
+
+If you keep regular hours, your busiest time is probably the same every day. Set it, and the windows line up so one **resets right at that time**:
+
+```bash
+claude-warmup config peak 14:00
+```
+
+A window that resets at 14:00 has to start at 09:00, and that one at 04:00, and so on. So with a peak time, pings go out only at peak − 5h, −10h, −15h, −20h (for 14:00: 04:00, 09:00, 18:00, 23:00, limited to your `hours`). Between those times it waits rather than start a window that would end at the wrong time.
+
+- If you start a window yourself at another time, it can't be moved. When it ends, claude-warmup waits for the next aligned time and lines up again.
+- The trade-off: while it waits, no window is running. Without a peak time, a new window starts as soon as the last one ends.
+- `claude-warmup config peak off` turns it off.
 
 ### Menu bar / tmux
 
