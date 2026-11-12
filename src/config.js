@@ -1,6 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import { readJson, writeJsonAtomic } from './state.js';
+import { gapIndex } from './scheduler.js';
 import { parseHours, formatHours, parseDays, formatDays, parseHM, formatHM } from './time.js';
 
 export const DEFAULTS = Object.freeze({
@@ -12,6 +13,7 @@ export const DEFAULTS = Object.freeze({
   claudePath: '', // '' = auto-detect
   lang: '', // '' = auto, 'en', 'ko'
   peak: '', // '' = off; "HH:MM" or "HH:MM weekdays" = line windows up so one resets right at this time
+  gap: '', // with a peak: a time of day to leave without a window ("03:00"); required for the peak to apply
 });
 
 export const CONFIG_KEYS = Object.keys(DEFAULTS);
@@ -48,6 +50,12 @@ export function validateConfigValue(key, input) {
       const v = raw.toLowerCase();
       if (v === '' || v === 'auto') return { ok: true, value: '' };
       return v === 'en' || v === 'ko' ? { ok: true, value: v } : { ok: false };
+    }
+    case 'gap': {
+      const v = raw.toLowerCase();
+      if (['', 'off', 'none', 'no', '끄기'].includes(v)) return { ok: true, value: '' };
+      const m = parseHM(raw);
+      return m === null ? { ok: false } : { ok: true, value: formatHM(m % 1440) };
     }
     case 'peak': {
       const v = raw.toLowerCase();
@@ -95,9 +103,15 @@ export function formatPeak(p) {
   return p.days.size === 7 ? hm : `${hm} ${formatDays(p.days)}`;
 }
 
-/** Peak time as { min, days }, or null when off. */
+/**
+ * Peak time as { min, days, gap }, or null when off. `gap` is the chosen gap option (0..4),
+ * or null while no gap time is set: then the peak is not applied yet.
+ */
 export function getPeak(cfg) {
-  return cfg.peak ? parsePeak(cfg.peak) : null;
+  const p = cfg.peak ? parsePeak(cfg.peak) : null;
+  if (!p) return null;
+  const gapMin = cfg.gap ? parseHM(cfg.gap) : null;
+  return { ...p, gap: gapMin === null ? null : gapIndex(p.min, gapMin % 1440) };
 }
 
 export function getSchedule(cfg) {

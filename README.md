@@ -10,7 +10,7 @@ It also shows your current session and weekly usage, with reset times.
 
 ```
 $ claude-warmup
-Claude Warmup v0.2.0
+Claude Warmup v0.3.0
 
 Usage  checked 08:42 · claude /usage
   Current session (5h)  █████░░░░░░░░░░░░░░░  23%  resets 11:00 (in 2h 17m)
@@ -125,6 +125,7 @@ npx github:jungtaejoon/claude-warmup install
 | `claudePath` | auto | Path to the `claude` CLI |
 | `lang` | auto | `en` / `ko` |
 | `peak` | off | Your busiest time, e.g. `14:00` or `11:30 weekdays`: windows line up so one resets right then ([peak time](#peak-time)) |
+| `gap` | — | With a peak: a time to leave without a window, e.g. `03:00` (required for the peak) |
 
 **Suggested setup**: set the hours you want windows kept running, for example from early morning to late night. Inside those hours each window starts right as the last one ends.
 
@@ -137,14 +138,15 @@ claude-warmup config hours 06:00-23:00
 If you keep regular hours, your busiest time is probably the same every day. Set it, and the windows line up so one **resets right at that time**:
 
 ```bash
-claude-warmup config peak 14:00
+claude-warmup config peak 11:30 weekdays   # or just 14:00 for every day
+claude-warmup config gap 03:00             # where to leave the 4 empty hours (required)
 ```
 
-A window that resets at 14:00 has to start at 09:00, and that one at 04:00, and so on. So with a peak time, pings go out only at peak − 5h, −10h, −15h, −20h (for 14:00: 04:00, 09:00, 18:00, 23:00, limited to your `hours`). Between those times it waits rather than start a window that would end at the wrong time.
+**Why a gap?** A day is 24 hours and a window is 5, so four windows fill 20 hours and 4 hours are left with no window. Lining windows up with the peak can't hide that, so you choose where the empty hours go: any time inside the gap you want. For a peak at 11:30 the gap can be 11:30–15:30, 16:30–20:30, 21:30–01:30, 02:30–06:30 or 07:30–11:30. `config gap 03:00` picks 02:30–06:30, and windows then run 06:30–11:30–16:30–21:30–02:30. Until a gap is set, the peak is not applied.
 
+- Pings go out only at those window starts (inside your `hours`). Off them it waits rather than open a window that would end at the wrong time. Waiting costs nothing.
 - If you start a window yourself at another time, it can't be moved. When it ends, claude-warmup waits for the next aligned time and lines up again.
-- The trade-off: while it waits, no window is running. Without a peak time, a new window starts as soon as the last one ends.
-- Add days to limit it, e.g. `claude-warmup config peak 11:30 weekdays` (or `mon,wed,fri`, `mon-fri`). Aligning starts within a day of each peak; the rest of the time (say, a weekend) a new window starts as soon as the last one ends.
+- Days are optional: `11:30 weekdays`, `mon,wed,fri`, `mon-fri`. Aligning starts within a day of each peak; the rest of the time (say, a weekend) a new window starts as soon as the last one ends.
 - `claude-warmup config peak off` turns it off.
 
 ### Menu bar / tmux

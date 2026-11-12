@@ -55,8 +55,8 @@ test('windowEndAfterPing trusts sane server times and estimates otherwise', () =
 });
 
 // ---------- peak time ----------
-import { peakSlots, peakGate, nextPeakSlot, PEAK_LATE_MS } from '../src/scheduler.js';
-import { parsePeak } from '../src/config.js';
+import { peakSlots, peakGate, nextPeakSlot, gapIndex, gapOptions, PEAK_LATE_MS } from '../src/scheduler.js';
+import { parsePeak, getPeak } from '../src/config.js';
 
 const at = (h, m = 0, day = 9) => new Date(2026, 10, day, h, m).getTime();
 const P14 = parsePeak('14:00');
@@ -112,4 +112,24 @@ test('peak on weekdays: weekends chain as usual, aligning starts the day before'
   assert.deepEqual(peakGate({ now: at(15, 0, 13), peak: wk }), { ok: true, free: true });
   // Monday 06:30 is a slot
   assert.equal(peakGate({ now: at(6, 30, 16), peak: wk }).ok, true);
+});
+
+test('gapIndex: the option holding the time, or the nearest one', () => {
+  const p = 11 * 60 + 30;
+  assert.equal(gapIndex(p, 3 * 60), 3); // 02:30–06:30
+  assert.equal(gapIndex(p, 12 * 60), 0); // 11:30–15:30
+  assert.equal(gapIndex(p, 22 * 60), 2); // 21:30–01:30 (over midnight)
+  assert.equal(gapIndex(p, 15 * 60 + 50), 0); // between options: 15:30 end is nearer than 16:30 start
+  assert.equal(gapOptions(p).length, 5);
+});
+
+test('with a dawn gap, windows run 06:30-11:30-16:30-21:30-02:30 and nothing until 06:30', () => {
+  const peak = getPeak({ peak: '11:30', gap: '03:00' });
+  assert.equal(peak.gap, 3);
+  const slots = peakSlots(at(12), peak).filter((s) => s.at >= at(0) && s.at < at(0, 0, 10)).map((s) => s.at);
+  assert.deepEqual(slots, [at(6, 30), at(11, 30), at(16, 30), at(21, 30)]);
+  const r = peakGate({ now: at(2, 40), peak, earlyMs: 0 });
+  assert.equal(r.ok, false);
+  assert.equal(r.until, at(6, 30));
+  assert.equal(getPeak({ peak: '11:30', gap: '' }).gap, null);
 });

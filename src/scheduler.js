@@ -53,6 +53,9 @@ export function windowEndAfterPing(resetAt, pingedAt) {
 // before, ...), so a chain of windows ends exactly at the peak and a fresh window is ready when
 // you need it most. If your own messages started a window at another time, that window can't be
 // moved: we just wait for the next aligned slot after it ends.
+// 24 hours don't divide into 5-hour windows: between two daily peaks there is room for four
+// windows and a 4-hour gap with none. You choose where that gap goes (`config gap`); it can sit
+// after any window boundary, i.e. start at peak + 5h·m for m = 0..4.
 // A peak can be limited to some days (e.g. weekdays). Far from any peak (a weekend), windows
 // just chain as usual; aligning starts once the next peak is within PEAK_LEAD_MS.
 
@@ -63,6 +66,36 @@ const SLOTS_PER_PEAK = 4;
 /** Start aligning this long before a peak: the earliest slot (peak − 20h) plus one window, so a usual ping can't run over it. */
 export const PEAK_LEAD_MS = (SLOTS_PER_PEAK + 1) * WINDOW_MS;
 const ALL_DAYS = new Set([0, 1, 2, 3, 4, 5, 6]);
+const DAY_MS = 24 * HOUR;
+const DAY_MIN = 1440;
+/** Length of the daily gap: what is left of 24h after four 5-hour windows. */
+export const GAP_MS = DAY_MS - SLOTS_PER_PEAK * WINDOW_MS;
+
+/** The five places the gap can go for a peak, as minutes after midnight: [{ m, start, end }]. */
+export function gapOptions(peakMin) {
+  const out = [];
+  for (let m = 0; m <= SLOTS_PER_PEAK; m++) {
+    const start = (peakMin + m * 300) % DAY_MIN;
+    out.push({ m, start, end: (start + GAP_MS / MINUTE) % DAY_MIN });
+  }
+  return out;
+}
+
+/** Which gap option holds `gapMin` (a time you want left empty); the nearest one if none does. */
+export function gapIndex(peakMin, gapMin) {
+  const len = GAP_MS / MINUTE;
+  let best = 0;
+  let bestDist = Infinity;
+  for (const o of gapOptions(peakMin)) {
+    const into = (gapMin - o.start + DAY_MIN) % DAY_MIN; // minutes after the gap starts
+    const dist = into < len ? 0 : Math.min(into - len + 1, DAY_MIN - into);
+    if (dist < bestDist) {
+      best = o.m;
+      bestDist = dist;
+    }
+  }
+  return best;
+}
 
 /** Peak occurrences (local time) from `fromDay` to `toDay` days around `ms`, on the peak's days. */
 export function peakTimes(ms, peak, fromDay = -1, toDay = 8) {
@@ -77,11 +110,17 @@ export function peakTimes(ms, peak, fromDay = -1, toDay = 8) {
   return out;
 }
 
-/** Aligned ping slots around `ms`, sorted, each with the peak it lines up with. */
+/**
+ * Aligned ping slots around `ms`, sorted, each with the peak it leads to. For each peak the
+ * day before it holds four window starts and the gap: m windows from the previous day's peak
+ * time, the gap, then 4 − m windows that end exactly at the peak.
+ */
 export function peakSlots(ms, peak) {
+  const m = peak.gap ?? 0;
   const out = [];
   for (const peakAt of peakTimes(ms, peak)) {
-    for (let k = 1; k <= SLOTS_PER_PEAK; k++) out.push({ at: peakAt - k * WINDOW_MS, peakAt });
+    for (let j = 0; j < m; j++) out.push({ at: peakAt - DAY_MS + j * WINDOW_MS, peakAt });
+    for (let k = 1; k <= SLOTS_PER_PEAK - m; k++) out.push({ at: peakAt - k * WINDOW_MS, peakAt });
   }
   return out.sort((a, b) => a.at - b.at);
 }

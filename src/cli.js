@@ -9,7 +9,7 @@ import { getClaudeInfo, ensureWorkDir, doPing, runTick, applyUsageToState, hydra
 import { getBackend, buildPathEnv, stableNodePath } from './service/index.js';
 import { installAppCopy } from './selfcopy.js';
 import { nextScheduledStart, isScheduledAt, MINUTE, HOUR, parseHours, formatHM, formatDays } from './time.js';
-import { RESET_MARGIN_MS, WINDOW_MS, nextPeakSlot } from './scheduler.js';
+import { RESET_MARGIN_MS, WINDOW_MS, nextPeakSlot, gapOptions } from './scheduler.js';
 import * as fmt from './format.js';
 import { VERSION } from './version.js';
 
@@ -130,12 +130,36 @@ export function peakSlotTimes(config) {
   if (!peak) return [];
   const hours = parseHours(config.hours) || { always: true };
   const out = [];
-  for (let k = 1; k <= 4; k++) {
-    const m = (((peak.min - k * 300) % 1440) + 1440) % 1440;
+  const gap = peak.gap ?? 0;
+  // window starts: from the peak forward until the gap, then back from the next peak
+  const offsets = [];
+  for (let j = 0; j < gap; j++) offsets.push(j * 300);
+  for (let k = 1; k <= 4 - gap; k++) offsets.push(-k * 300);
+  for (const off of offsets) {
+    const m = (((peak.min + off) % 1440) + 1440) % 1440;
     const d = new Date(2026, 0, 5, Math.floor(m / 60), m % 60);
     if (isScheduledAt(d.getTime(), { hours, days: new Set([0, 1, 2, 3, 4, 5, 6]) })) out.push(m);
   }
   return out.sort((a, b) => a - b).map(formatHM);
+}
+
+/** "02:30–06:30" for each place the gap can go, or for the chosen one. */
+export function gapRanges(config, onlyChosen = false) {
+  const peak = getPeak(config);
+  if (!peak) return [];
+  return gapOptions(peak.min)
+    .filter((o) => !onlyChosen || o.m === peak.gap)
+    .map((o) => `${formatHM(o.start)}–${formatHM(o.end)}`);
+}
+
+function peakRows(config) {
+  const peak = getPeak(config);
+  if (!peak) return [];
+  if (peak.gap === null) return [[t('lblPeak'), t('peakNeedsGap', { peak: describePeak(config) })]];
+  return [
+    [t('lblPeak'), t('peakRow', { peak: describePeak(config), slots: peakSlotTimes(config).join(', ') })],
+    [t('lblGap'), gapRanges(config, true)[0]],
+  ];
 }
 
 function describeTick(r, now = Date.now()) {
@@ -185,7 +209,7 @@ export function computeNext({ now, config, state, svc, session }) {
   else windowEnd = state.windowEndsAt && state.windowEndsAt > now ? state.windowEndsAt : null;
   const base = windowEnd ? windowEnd + RESET_MARGIN_MS : now;
   const peak = getPeak(config);
-  if (peak) {
+  if (peak && peak.gap !== null) {
     const slot = nextPeakSlot(base, peak, getSchedule(config), { earlyMs: config.interval * MINUTE });
     if (!slot) return { kind: 'never' };
     if (slot.at <= now + MINUTE) return { kind: 'soon', within: config.interval };
@@ -263,7 +287,7 @@ function renderStatus(m) {
   const rows = [
     [t('lblStatus'), statusText],
     [t('lblSchedule'), describeSchedule(m.config)],
-    ...(m.config.peak ? [[t('lblPeak'), t('peakRow', { peak: describePeak(m.config), slots: peakSlotTimes(m.config).join(', ') })]] : []),
+    ...peakRows(m.config),
     [t('lblLastPing'), describeLastPing(m.lastPing, m.now)],
     [t('lblNextPing'), describeNext(m.next, m.now)],
   ];
@@ -486,7 +510,7 @@ async function cmdConfig({ paths, config, args, opts }) {
   }
   const show = (k, v) => {
     if (v !== '') return String(v);
-    if (k === 'peak') return t('peakOff');
+    if (k === 'peak' || k === 'gap') return t('peakOff');
     return k === 'model' ? t('modelDefault') : t('configAuto');
   };
 
@@ -523,7 +547,7 @@ async function cmdConfig({ paths, config, args, opts }) {
     const at = nextScheduledStart(now, getSchedule(config));
     if (at && at > now + MINUTE) console.log(`  ${t('configNextStart', { when: fmt.fmtWhen(at, now) })}`);
   }
-  if (key === 'peak' || key === 'hours') {
+  if (key === 'peak' || key === 'gap' || key === 'hours') {
     // A wait computed for the old setting must not hold back the new one.
     const state = loadState(paths);
     if (state.peakWaitUntil) {
@@ -531,13 +555,19 @@ async function cmdConfig({ paths, config, args, opts }) {
       saveState(paths, state);
     }
   }
-  if (key === 'peak') {
-    if (config.peak) {
-      console.log(`  ${t('configPeakOn', { slots: peakSlotTimes(config).join(', ') || '—', peak: describePeak(config) })}`);
-      if (getPeak(config).days.size < 7) console.log(fmt.color.dim(`  ${t('configPeakDays')}`));
-      console.log(fmt.color.dim(`  ${t('configPeakNote')}`));
+  if (key === 'peak' || key === 'gap') {
+    const peak = getPeak(config);
+    if (!peak) {
+      console.log(`  ${key === 'peak' ? t('configPeakOff') : t('configGapNoPeak')}`);
+    } else if (peak.gap === null) {
+      console.log(`  ${t('configGapNeeded', { peak: describePeak(config) })}`);
+      console.log(`  ${t('configGapOptions', { options: gapRanges(config).join(' · ') })}`);
+      console.log(fmt.color.dim(`  ${t('configGapHow')}`));
     } else {
-      console.log(`  ${t('configPeakOff')}`);
+      console.log(`  ${t('configPeakOn', { slots: peakSlotTimes(config).join(', ') || '—', peak: describePeak(config) })}`);
+      console.log(`  ${t('configGapOn', { gap: gapRanges(config, true)[0] })}`);
+      if (peak.days.size < 7) console.log(fmt.color.dim(`  ${t('configPeakDays')}`));
+      console.log(fmt.color.dim(`  ${t('configPeakNote')}`));
     }
   }
   if (key === 'interval' || key === 'claudePath') {

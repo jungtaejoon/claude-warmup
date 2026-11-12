@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs, computeNext, describeSchedule, rowLabel, peakSlotTimes } from '../src/cli.js';
+import { parseArgs, computeNext, describeSchedule, rowLabel, peakSlotTimes, gapRanges } from '../src/cli.js';
 import { MESSAGES, setLang, detectLang, t } from '../src/i18n.js';
 import { strWidth, fmtDuration, shortModel, pad } from '../src/format.js';
 import { DEFAULTS } from '../src/config.js';
@@ -112,24 +112,34 @@ test('the CLI runs end to end against the fake claude', (t) => {
 });
 
 test('peakSlotTimes lists the aligned ping times inside the hours', () => {
-  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '14:00' }), ['04:00', '09:00', '18:00', '23:00']);
-  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '14:00', hours: '06:00-23:00' }), ['09:00', '18:00']);
+  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '14:00', gap: '14:00' }), ['04:00', '09:00', '18:00', '23:00']);
+  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '14:00', gap: '14:00', hours: '06:00-23:00' }), ['09:00', '18:00']);
   assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '' }), []);
 });
 
 test('computeNext with a peak time points at the next aligned slot', () => {
   const now = new Date(2026, 10, 9, 10, 30).getTime();
   const svc = { active: true };
-  const next = computeNext({ now, config: { ...DEFAULTS, peak: '14:00' }, state: {}, svc, session: { active: false } });
+  const next = computeNext({ now, config: { ...DEFAULTS, peak: '14:00', gap: '14:00' }, state: {}, svc, session: { active: false } });
   assert.equal(next.kind, 'peakSlot');
   assert.equal(next.at, new Date(2026, 10, 9, 18, 0).getTime() - 5 * 60e3);
   // a window you started yourself until 12:00 -> still the 18:00 slot (12:00 is off-slot)
-  const busy = computeNext({ now, config: { ...DEFAULTS, peak: '14:00' }, state: {}, svc, session: { active: true, resetsAt: new Date(2026, 10, 9, 12, 0).getTime() } });
+  const busy = computeNext({ now, config: { ...DEFAULTS, peak: '14:00', gap: '14:00' }, state: {}, svc, session: { active: true, resetsAt: new Date(2026, 10, 9, 12, 0).getTime() } });
   assert.equal(busy.at, next.at);
 });
 
 test('computeNext: weekday peak on a Saturday -> usual next ping', () => {
   const now = new Date(2026, 10, 14, 12, 0).getTime(); // Saturday
-  const next = computeNext({ now, config: { ...DEFAULTS, peak: '11:30 weekdays' }, state: {}, svc: { active: true }, session: { active: false } });
+  const next = computeNext({ now, config: { ...DEFAULTS, peak: '11:30 weekdays', gap: '03:00' }, state: {}, svc: { active: true }, session: { active: false } });
+  assert.equal(next.kind, 'soon');
+});
+
+test('a gap time picks where the 4 empty hours go', () => {
+  const cfg = { ...DEFAULTS, peak: '11:30 weekdays', gap: '03:00' };
+  assert.deepEqual(gapRanges(cfg), ['11:30–15:30', '16:30–20:30', '21:30–01:30', '02:30–06:30', '07:30–11:30']);
+  assert.deepEqual(gapRanges(cfg, true), ['02:30–06:30']);
+  assert.deepEqual(peakSlotTimes(cfg), ['06:30', '11:30', '16:30', '21:30']);
+  // without a gap, the peak waits to be applied
+  const next = computeNext({ now: new Date(2026, 10, 9, 10, 30).getTime(), config: { ...DEFAULTS, peak: '14:00' }, state: {}, svc: { active: true }, session: { active: false } });
   assert.equal(next.kind, 'soon');
 });

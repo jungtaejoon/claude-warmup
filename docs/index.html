@@ -34,7 +34,7 @@
   "downloadUrl": "https://github.com/jungtaejoon/claude-warmup",
   "codeRepository": "https://github.com/jungtaejoon/claude-warmup",
   "license": "https://opensource.org/licenses/MIT",
-  "softwareVersion": "0.2.0",
+  "softwareVersion": "0.3.0",
   "inLanguage": ["en", "ko"],
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "author": { "@type": "Person", "name": "jungtaejoon", "url": "https://github.com/jungtaejoon" }
@@ -83,7 +83,7 @@
       <a class="btn ghost" href="https://github.com/jungtaejoon/claude-warmup">View on GitHub</a>
     </div>
 <pre class="term" aria-label="Example output of claude-warmup status"><span class="dim">$</span> claude-warmup
-Claude Warmup v0.2.0
+Claude Warmup v0.3.0
 
 Usage  <span class="dim">checked 08:42 · claude /usage</span>
   Current session (5h)  <span class="bar">█████</span><span class="dim">░░░░░░░░░░░░░░░</span>  23%  resets 11:00 <span class="dim">(in 2h 17m)</span>
@@ -172,7 +172,7 @@ Auto warm-up
   <section id="faq">
     <h2>FAQ</h2>
     <details open><summary>When does the Claude 5-hour usage limit reset?</summary><p>5 hours after the first message of a window. If that first message is yours at 9:00, the reset is at 14:00. With claude-warmup a window is already running when you start, so the reset comes sooner. More in the <a href="claude-usage-limit-reset/">Claude usage limit reset guide</a>.</p></details>
-    <details><summary>Can I make the reset land at my busiest time?</summary><p>Yes. <code>claude-warmup config peak 14:00</code> lines the windows up so one resets right at 14:00: pings then go out only at 09:00, 04:00 and so on (peak minus multiples of 5 hours). If you start a window yourself at another time, it can't be moved; things line up again after it ends. Add days to limit it: <code>config peak 11:30 weekdays</code>.</p></details>
+    <details><summary>Can I make the reset land at my busiest time?</summary><p>Yes. <code>claude-warmup config peak 11:30 weekdays</code> lines the windows up so one resets right at 11:30. A day is 24 hours and windows are 5, so 4 hours a day are left with no window: choose where with <code>config gap 03:00</code> (here 02:30–06:30). Windows then run 06:30–11:30–16:30–21:30–02:30. A window you start yourself at another time can't be moved; things line up again after it ends.</p></details>
     <details><summary>Does this give me more Claude usage?</summary><p>No. Same limits. You just rarely wait the full 5 hours.</p></details>
     <details><summary>How much usage does the warm-up cost?</summary><p>Almost none. Checks use the local <code>/usage</code> command (0 tokens). The ping is one short haiku message per window.</p></details>
     <details><summary>Can I run it while my computer is off?</summary><p>Yes, on a server. See <a href="#server">Run it on a free server</a>.</p></details>
