@@ -143,3 +143,29 @@ test('a gap time picks where the 4 empty hours go', () => {
   const next = computeNext({ now: new Date(2026, 10, 9, 10, 30).getTime(), config: { ...DEFAULTS, peak: '14:00' }, state: {}, svc: { active: true }, session: { active: false } });
   assert.equal(next.kind, 'soon');
 });
+
+test('config peak lists numbered gap choices; config gap <n> picks one', (t) => {
+  const box = sandbox('idle');
+  t.after(() => box.cleanup());
+  const env = { ...process.env, CLAUDE_WARMUP_HOME: box.dir, NO_COLOR: '1' };
+  const run = (...args) => spawnSync(process.execPath, [BIN, ...args, '--lang', 'en'], { env, encoding: 'utf8' });
+
+  assert.equal(run('config', 'gap', '4').status, 1, 'a number needs a peak first');
+  const peak = run('config', 'peak', '11:30', 'weekdays');
+  assert.equal(peak.status, 0);
+  assert.match(peak.stdout, /1\) 11:30–15:30 {2}\(right after the peak\)/);
+  assert.match(peak.stdout, /4\) 02:30–06:30/);
+  assert.match(peak.stdout, /config gap 4/);
+
+  const gap = run('config', 'gap', '4');
+  assert.equal(gap.status, 0);
+  assert.match(gap.stdout, /Empty hours \(no window\): 02:30–06:30/);
+  assert.match(gap.stdout, /06:30, 11:30, 16:30, 21:30/);
+  assert.match(run('config', 'gap').stdout, /4\) 02:30–06:30 {2}← current/);
+
+  // a new peak whose choices don't hold the old gap -> asked again
+  assert.match(run('config', 'peak', '12:30').stdout, /Where should they go/);
+  // one whose choices still hold it -> kept
+  run('config', 'gap', '03:00');
+  assert.match(run('config', 'peak', '12:00').stdout, /Empty hours \(no window\): 03:00–07:00/);
+});

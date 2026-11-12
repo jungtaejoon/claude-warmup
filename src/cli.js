@@ -9,7 +9,7 @@ import { getClaudeInfo, ensureWorkDir, doPing, runTick, applyUsageToState, hydra
 import { getBackend, buildPathEnv, stableNodePath } from './service/index.js';
 import { installAppCopy } from './selfcopy.js';
 import { nextScheduledStart, isScheduledAt, MINUTE, HOUR, parseHours, formatHM, formatDays } from './time.js';
-import { RESET_MARGIN_MS, WINDOW_MS, nextPeakSlot, gapOptions } from './scheduler.js';
+import { RESET_MARGIN_MS, WINDOW_MS, nextPeakSlot, gapOptions, gapExactIndex } from './scheduler.js';
 import * as fmt from './format.js';
 import { VERSION } from './version.js';
 
@@ -496,6 +496,66 @@ async function cmdUninstall({ paths, opts }) {
 
 // ---------- config ----------
 
+/** Numbered gap choices for the current peak, e.g. "4) 02:30–06:30  (dawn)". */
+export function gapChoiceLines(config) {
+  const peak = getPeak(config);
+  if (!peak) return [];
+  return gapOptions(peak.min).map((o) => {
+    let note = '';
+    if (o.m === 0) note = t('gapAfterPeak');
+    else if (o.m === 4) note = t('gapBeforePeak');
+    const chosen = config.gap && peak.gap === o.m ? `  ${t('gapCurrent')}` : '';
+    return `${o.m + 1}) ${formatHM(o.start)}–${formatHM(o.end)}${note ? `  (${note})` : ''}${chosen}`;
+  });
+}
+
+/** Is the saved gap time really inside one of the current peak's gap options? */
+function gapFits(config) {
+  const peak = getPeak(config);
+  if (!peak || !config.gap) return false;
+  const [h, m] = config.gap.split(':').map(Number);
+  return gapExactIndex(peak.min, h * 60 + m) !== null;
+}
+
+async function askLine(question) {
+  const { createInterface } = await import('node:readline/promises');
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    return (await rl.question(question)).trim();
+  } catch {
+    return ''; // Ctrl+C / Ctrl+D: decide later
+  } finally {
+    rl.close();
+  }
+}
+
+/** Show the gap choices; in a terminal, ask for a number and save it. Returns true when a gap was chosen. */
+async function promptGap({ paths, config, opts }) {
+  console.log(`  ${gapFits(config) ? t('configGapChoose') : t('configGapNeeded', { peak: describePeak(config) })}`);
+  for (const line of gapChoiceLines(config)) console.log(`    ${line}`);
+  if (!(process.stdin.isTTY && process.stdout.isTTY) || opts.json) {
+    console.log(fmt.color.dim(`  ${t('configGapHow')}`));
+    return false;
+  }
+  const answer = await askLine(`  ${t('gapAsk')}`);
+  const n = Number(answer);
+  if (!Number.isInteger(n) || n < 1 || n > 5) {
+    console.log(fmt.color.dim(`  ${t('configGapHow')}`));
+    return false;
+  }
+  config.gap = formatHM(gapOptions(getPeak(config).min)[n - 1].start);
+  saveConfig(paths, config);
+  return true;
+}
+
+function printPeakSummary(config) {
+  const peak = getPeak(config);
+  console.log(fmt.ok(t('configGapOn', { gap: gapRanges(config, true)[0] })));
+  console.log(`  ${t('configPeakOn', { slots: peakSlotTimes(config).join(', ') || '—', peak: describePeak(config) })}`);
+  if (peak.days.size < 7) console.log(fmt.color.dim(`  ${t('configPeakDays')}`));
+  console.log(fmt.color.dim(`  ${t('configPeakNote')}`));
+}
+
 async function cmdConfig({ paths, config, args, opts }) {
   if (opts.reset) {
     saveConfig(paths, { ...DEFAULTS });
@@ -528,9 +588,23 @@ async function cmdConfig({ paths, config, args, opts }) {
     console.error(fmt.fail(t('configUnknownKey', { key, keys: CONFIG_KEYS.join(', ') })));
     return 1;
   }
+  if (key === 'gap' && getPeak(config) && vals.length === 0) {
+    // `config gap` with a peak set: show the choices (and ask, in a terminal)
+    if (await promptGap({ paths, config, opts })) printPeakSummary(config);
+    return 0;
+  }
   if (vals.length === 0) {
     console.log(show(key, config[key]));
     return 0;
+  }
+  if (key === 'gap' && /^[1-5]$/.test(vals.join('').trim())) {
+    // a number picks one of the listed choices
+    const peak = getPeak(config);
+    if (!peak) {
+      console.error(fmt.fail(t('configGapNoPeakNumber')));
+      return 1;
+    }
+    vals = [formatHM(gapOptions(peak.min)[Number(vals.join('').trim()) - 1].start)];
   }
   const v = validateConfigValue(key, vals.join(' '));
   if (!v.ok) {
@@ -559,15 +633,12 @@ async function cmdConfig({ paths, config, args, opts }) {
     const peak = getPeak(config);
     if (!peak) {
       console.log(`  ${key === 'peak' ? t('configPeakOff') : t('configGapNoPeak')}`);
-    } else if (peak.gap === null) {
-      console.log(`  ${t('configGapNeeded', { peak: describePeak(config) })}`);
-      console.log(`  ${t('configGapOptions', { options: gapRanges(config).join(' · ') })}`);
-      console.log(fmt.color.dim(`  ${t('configGapHow')}`));
+    } else if (gapFits(config)) {
+      printPeakSummary(config);
+      if (key === 'peak') console.log(fmt.color.dim(`  ${t('configGapChange')}`));
     } else {
-      console.log(`  ${t('configPeakOn', { slots: peakSlotTimes(config).join(', ') || '—', peak: describePeak(config) })}`);
-      console.log(`  ${t('configGapOn', { gap: gapRanges(config, true)[0] })}`);
-      if (peak.days.size < 7) console.log(fmt.color.dim(`  ${t('configPeakDays')}`));
-      console.log(fmt.color.dim(`  ${t('configPeakNote')}`));
+      // No gap yet, or the old one doesn't fit the new peak's choices: ask.
+      if (await promptGap({ paths, config, opts })) printPeakSummary(config);
     }
   }
   if (key === 'interval' || key === 'claudePath') {

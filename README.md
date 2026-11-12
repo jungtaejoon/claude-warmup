@@ -137,12 +137,20 @@ claude-warmup config hours 06:00-23:00
 
 If you keep regular hours, your busiest time is probably the same every day. Set it, and the windows line up so one **resets right at that time**:
 
-```bash
-claude-warmup config peak 11:30 weekdays   # or just 14:00 for every day
-claude-warmup config gap 03:00             # where to leave the 4 empty hours (required)
+```
+$ claude-warmup config peak 11:30 weekdays      # or just 14:00 for every day
+✓ peak = 11:30 weekdays
+  A day is 24 hours, so lining windows up with weekdays 11:30 leaves 4 hours with no window. Where should they go?
+    1) 11:30–15:30  (right after the peak)
+    2) 16:30–20:30
+    3) 21:30–01:30
+    4) 02:30–06:30
+    5) 07:30–11:30  (right before the peak)
+  Number (Enter to decide later): 4
+✓ Empty hours (no window): 02:30–06:30
 ```
 
-**Why a gap?** A day is 24 hours and a window is 5, so four windows fill 20 hours and 4 hours are left with no window. Lining windows up with the peak can't hide that, so you choose where the empty hours go: any time inside the gap you want. For a peak at 11:30 the gap can be 11:30–15:30, 16:30–20:30, 21:30–01:30, 02:30–06:30 or 07:30–11:30. `config gap 03:00` picks 02:30–06:30, and windows then run 06:30–11:30–16:30–21:30–02:30. Until a gap is set, the peak is not applied.
+**Why a gap?** A day is 24 hours and a window is 5, so four windows fill 20 hours and 4 hours are left with no window. Lining windows up with the peak can't hide that, so you choose where the empty hours go. Setting a peak lists the five choices and asks for a number; picking 4 above leaves 02:30–06:30 empty, and windows then run 06:30–11:30–16:30–21:30–02:30. Until you choose, the peak is not applied. Choose or change it later with `claude-warmup config gap` (asks again), `config gap 4`, or a time inside it like `config gap 03:00`.
 
 - Pings go out only at those window starts (inside your `hours`). Off them it waits rather than open a window that would end at the wrong time. Waiting costs nothing.
 - If you start a window yourself at another time, it can't be moved. When it ends, claude-warmup waits for the next aligned time and lines up again.

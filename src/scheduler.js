@@ -81,6 +81,13 @@ export function gapOptions(peakMin) {
   return out;
 }
 
+/** The gap option that really holds `gapMin`, or null when it falls between two options. */
+export function gapExactIndex(peakMin, gapMin) {
+  const len = GAP_MS / MINUTE;
+  const hit = gapOptions(peakMin).find((o) => (gapMin - o.start + DAY_MIN) % DAY_MIN < len);
+  return hit ? hit.m : null;
+}
+
 /** Which gap option holds `gapMin` (a time you want left empty); the nearest one if none does. */
 export function gapIndex(peakMin, gapMin) {
   const len = GAP_MS / MINUTE;
