@@ -56,9 +56,10 @@ test('windowEndAfterPing trusts sane server times and estimates otherwise', () =
 
 // ---------- peak time ----------
 import { peakSlots, peakGate, nextPeakSlot, PEAK_LATE_MS } from '../src/scheduler.js';
+import { parsePeak } from '../src/config.js';
 
 const at = (h, m = 0, day = 9) => new Date(2026, 10, day, h, m).getTime();
-const P14 = 14 * 60;
+const P14 = parsePeak('14:00');
 
 test('peakSlots: peak − 5h·k, for the peaks around now', () => {
   const slots = peakSlots(at(10), P14).filter((s) => s.peakAt === at(14));
@@ -66,20 +67,20 @@ test('peakSlots: peak − 5h·k, for the peaks around now', () => {
 });
 
 test('peakGate: pings at the slot, a little early, or a little late', () => {
-  assert.equal(peakGate({ now: at(9), peakMin: P14 }).ok, true);
-  assert.equal(peakGate({ now: at(8, 57), peakMin: P14 }).ok, true);
-  assert.equal(peakGate({ now: at(9) + PEAK_LATE_MS, peakMin: P14 }).ok, true);
-  const hit = peakGate({ now: at(9, 10), peakMin: P14 });
+  assert.equal(peakGate({ now: at(9), peak: P14 }).ok, true);
+  assert.equal(peakGate({ now: at(8, 57), peak: P14 }).ok, true);
+  assert.equal(peakGate({ now: at(9) + PEAK_LATE_MS, peak: P14 }).ok, true);
+  const hit = peakGate({ now: at(9, 10), peak: P14 });
   assert.equal(hit.slot, at(9));
   assert.equal(hit.peakAt, at(14));
 });
 
 test('peakGate: off-slot waits for the next slot instead of starting a misaligned window', () => {
-  const r = peakGate({ now: at(10, 30), peakMin: P14 });
+  const r = peakGate({ now: at(10, 30), peak: P14 });
   assert.equal(r.ok, false);
   assert.equal(r.until, at(18) - 5 * MINUTE); // next slot lines up with tomorrow's 14:00
   assert.equal(r.peakAt, at(14, 0, 10));
-  const r2 = peakGate({ now: at(5), peakMin: P14 });
+  const r2 = peakGate({ now: at(5), peak: P14 });
   assert.equal(r2.until, at(9) - 5 * MINUTE);
   assert.equal(r2.peakAt, at(14));
 });
@@ -96,4 +97,19 @@ test('nextPeakSlot skips slots outside the schedule', () => {
 test('precheck: a peak wait costs no network call', () => {
   const r = precheck({ now, schedule: always, state: { peakWaitUntil: now + HOUR } });
   assert.deepEqual(r, { action: 'skip', reason: 'peak_wait', until: now + HOUR });
+});
+
+test('peak on weekdays: weekends chain as usual, aligning starts the day before', () => {
+  const wk = parsePeak('11:30 weekdays');
+  // 2026-11-14 is a Saturday: the next peak is Monday, far away -> usual chaining
+  assert.deepEqual(peakGate({ now: at(12, 0, 14), peak: wk }), { ok: true, free: true });
+  // Sunday 12:00: Monday 11:30 is < 25h away -> wait for its first slot, Sunday 15:30 (11:30 - 20h)
+  const sun = peakGate({ now: at(12, 0, 15), peak: wk });
+  assert.equal(sun.ok, false);
+  assert.equal(sun.until, at(15, 30, 15) - 5 * MINUTE);
+  assert.equal(sun.peakAt, at(11, 30, 16));
+  // Friday afternoon after the last peak of the week -> usual chaining
+  assert.deepEqual(peakGate({ now: at(15, 0, 13), peak: wk }), { ok: true, free: true });
+  // Monday 06:30 is a slot
+  assert.equal(peakGate({ now: at(6, 30, 16), peak: wk }).ok, true);
 });

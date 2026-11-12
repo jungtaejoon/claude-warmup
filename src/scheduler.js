@@ -53,53 +53,72 @@ export function windowEndAfterPing(resetAt, pingedAt) {
 // before, ...), so a chain of windows ends exactly at the peak and a fresh window is ready when
 // you need it most. If your own messages started a window at another time, that window can't be
 // moved: we just wait for the next aligned slot after it ends.
+// A peak can be limited to some days (e.g. weekdays). Far from any peak (a weekend), windows
+// just chain as usual; aligning starts once the next peak is within PEAK_LEAD_MS.
 
 /** A ping this much after its slot still counts as on time (the computer may wake late). */
 export const PEAK_LATE_MS = 20 * MINUTE;
 /** Slots per peak: 5h·k must stay under a day, so k = 1..4. */
 const SLOTS_PER_PEAK = 4;
+/** Start aligning this long before a peak: the earliest slot (peak − 20h) plus one window, so a usual ping can't run over it. */
+export const PEAK_LEAD_MS = (SLOTS_PER_PEAK + 1) * WINDOW_MS;
+const ALL_DAYS = new Set([0, 1, 2, 3, 4, 5, 6]);
 
-/** Local time of `peakMin` (minutes after midnight) on the day of `ms`, shifted by `dayOffset` days. */
-function peakOn(ms, peakMin, dayOffset) {
-  const d = new Date(ms);
-  d.setDate(d.getDate() + dayOffset);
-  d.setHours(Math.floor(peakMin / 60), peakMin % 60, 0, 0);
-  return d.getTime();
+/** Peak occurrences (local time) from `fromDay` to `toDay` days around `ms`, on the peak's days. */
+export function peakTimes(ms, peak, fromDay = -1, toDay = 8) {
+  const days = peak.days || ALL_DAYS;
+  const out = [];
+  for (let day = fromDay; day <= toDay; day++) {
+    const d = new Date(ms);
+    d.setDate(d.getDate() + day);
+    d.setHours(Math.floor(peak.min / 60), peak.min % 60, 0, 0);
+    if (days.has(d.getDay())) out.push(d.getTime());
+  }
+  return out;
 }
 
 /** Aligned ping slots around `ms`, sorted, each with the peak it lines up with. */
-export function peakSlots(ms, peakMin) {
+export function peakSlots(ms, peak) {
   const out = [];
-  for (let day = -1; day <= 2; day++) {
-    const peakAt = peakOn(ms, peakMin, day);
+  for (const peakAt of peakTimes(ms, peak)) {
     for (let k = 1; k <= SLOTS_PER_PEAK; k++) out.push({ at: peakAt - k * WINDOW_MS, peakAt });
   }
   return out.sort((a, b) => a.at - b.at);
 }
 
+/** The first peak after `ms`, or null. */
+export function nextPeakAfter(ms, peak) {
+  return peakTimes(ms, peak).find((p) => p > ms) ?? null;
+}
+
 /**
- * Is `now` a good moment to start a window that lines up with the peak?
- * `earlyMs` lets a check that runs a little before the slot go ahead: the window then ends
- * slightly before the peak, which still gives a fresh window at the peak.
- * @returns {{ok: true, slot: number, peakAt: number} | {ok: false, until: number, peakAt: number}}
+ * Is `now` a good moment to start a window?
+ * - near a slot: yes, it lines up with the peak (`earlyMs` lets a check that runs a little
+ *   early go ahead; the window then ends slightly before the peak, which is still fine)
+ * - next peak far away (e.g. a weekend): yes, chain windows as usual
+ * - otherwise: wait for the next slot
+ * @returns {{ok: true, slot?: number, peakAt?: number, free?: true} | {ok: false, until: number, peakAt: number}}
  */
-export function peakGate({ now, peakMin, earlyMs = 5 * MINUTE }) {
-  const slots = peakSlots(now, peakMin);
+export function peakGate({ now, peak, earlyMs = 5 * MINUTE }) {
+  const slots = peakSlots(now, peak);
   const hit = slots.find((s) => now >= s.at - earlyMs && now <= s.at + PEAK_LATE_MS);
   if (hit) return { ok: true, slot: hit.at, peakAt: hit.peakAt };
+  const nextPeak = nextPeakAfter(now, peak);
+  if (nextPeak === null || nextPeak - now > PEAK_LEAD_MS) return { ok: true, free: true };
   const next = slots.find((s) => s.at - earlyMs > now);
   return { ok: false, until: next.at - earlyMs, peakAt: next.peakAt };
 }
 
-/** First aligned slot at or after `fromMs` that falls inside the schedule, or null. */
-export function nextPeakSlot(fromMs, peakMin, schedule, { earlyMs = 5 * MINUTE, horizonDays = 8 } = {}) {
-  for (let d = 0; d < horizonDays; d++) {
-    const base = fromMs + d * 24 * HOUR;
-    for (const s of peakSlots(base, peakMin)) {
-      if (s.at + PEAK_LATE_MS < fromMs) continue;
-      const at = Math.max(s.at - earlyMs, fromMs);
-      if (isScheduledAt(at, schedule)) return { at, peakAt: s.peakAt };
-    }
+/**
+ * When the next ping can go out, at or after `fromMs`, inside the schedule.
+ * @returns {{at: number, peakAt: number} | {at: number, free: true} | null}
+ */
+export function nextPeakSlot(fromMs, peak, schedule, { earlyMs = 5 * MINUTE, horizonMs = 8 * 24 * HOUR } = {}) {
+  for (let t = Math.ceil(fromMs / MINUTE) * MINUTE; t <= fromMs + horizonMs; t += MINUTE) {
+    if (!isScheduledAt(t, schedule)) continue;
+    const g = peakGate({ now: t, peak, earlyMs });
+    if (g.ok) return g.free ? { at: t, free: true } : { at: t, peakAt: g.peakAt };
+    t = Math.max(t, g.until - MINUTE);
   }
   return null;
 }

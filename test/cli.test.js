@@ -127,3 +127,9 @@ test('computeNext with a peak time points at the next aligned slot', () => {
   const busy = computeNext({ now, config: { ...DEFAULTS, peak: '14:00' }, state: {}, svc, session: { active: true, resetsAt: new Date(2026, 10, 9, 12, 0).getTime() } });
   assert.equal(busy.at, next.at);
 });
+
+test('computeNext: weekday peak on a Saturday -> usual next ping', () => {
+  const now = new Date(2026, 10, 14, 12, 0).getTime(); // Saturday
+  const next = computeNext({ now, config: { ...DEFAULTS, peak: '11:30 weekdays' }, state: {}, svc: { active: true }, session: { active: false } });
+  assert.equal(next.kind, 'soon');
+});

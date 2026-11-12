@@ -11,7 +11,7 @@ export const DEFAULTS = Object.freeze({
   interval: 5, // minutes between background checks
   claudePath: '', // '' = auto-detect
   lang: '', // '' = auto, 'en', 'ko'
-  peak: '', // '' = off; "HH:MM" = line windows up so one resets right at this time
+  peak: '', // '' = off; "HH:MM" or "HH:MM weekdays" = line windows up so one resets right at this time
 });
 
 export const CONFIG_KEYS = Object.keys(DEFAULTS);
@@ -52,8 +52,8 @@ export function validateConfigValue(key, input) {
     case 'peak': {
       const v = raw.toLowerCase();
       if (['', 'off', 'none', 'no', '끄기'].includes(v)) return { ok: true, value: '' };
-      const m = parseHM(raw);
-      return m === null ? { ok: false } : { ok: true, value: formatHM(m % 1440) };
+      const p = parsePeak(raw);
+      return p ? { ok: true, value: formatPeak(p) } : { ok: false };
     }
     default:
       return { ok: false };
@@ -79,9 +79,25 @@ export function saveConfig(paths, cfg) {
   writeJsonAtomic(paths.configFile, out);
 }
 
-/** Peak time in minutes after midnight, or null when off. */
+/** "11:30" | "11:30 weekdays" | "weekdays 11:30" | "14:00 mon,wed" -> { min, days }, or null. */
+export function parsePeak(input) {
+  const tokens = String(input ?? '').trim().split(/\s+/).filter(Boolean);
+  const timeIdx = tokens.findIndex((tk) => parseHM(tk) !== null);
+  if (timeIdx < 0) return null;
+  const min = parseHM(tokens[timeIdx]) % 1440;
+  const rest = tokens.filter((_, i) => i !== timeIdx).join(' ');
+  const days = rest ? parseDays(rest) : new Set([0, 1, 2, 3, 4, 5, 6]);
+  return days ? { min, days } : null;
+}
+
+export function formatPeak(p) {
+  const hm = formatHM(p.min);
+  return p.days.size === 7 ? hm : `${hm} ${formatDays(p.days)}`;
+}
+
+/** Peak time as { min, days }, or null when off. */
 export function getPeak(cfg) {
-  return cfg.peak ? parseHM(cfg.peak) : null;
+  return cfg.peak ? parsePeak(cfg.peak) : null;
 }
 
 export function getSchedule(cfg) {

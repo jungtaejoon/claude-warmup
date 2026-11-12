@@ -124,7 +124,7 @@ npx github:jungtaejoon/claude-warmup install
 | `interval` | `5` | Minutes between background checks; run `install` again after changing it |
 | `claudePath` | auto | Path to the `claude` CLI |
 | `lang` | auto | `en` / `ko` |
-| `peak` | off | Your busiest time, e.g. `14:00`: windows line up so one resets right then ([peak time](#peak-time)) |
+| `peak` | off | Your busiest time, e.g. `14:00` or `11:30 weekdays`: windows line up so one resets right then ([peak time](#peak-time)) |
 
 **Suggested setup**: set the hours you want windows kept running, for example from early morning to late night. Inside those hours each window starts right as the last one ends.
 
@@ -144,6 +144,7 @@ A window that resets at 14:00 has to start at 09:00, and that one at 04:00, and 
 
 - If you start a window yourself at another time, it can't be moved. When it ends, claude-warmup waits for the next aligned time and lines up again.
 - The trade-off: while it waits, no window is running. Without a peak time, a new window starts as soon as the last one ends.
+- Add days to limit it, e.g. `claude-warmup config peak 11:30 weekdays` (or `mon,wed,fri`, `mon-fri`). Aligning starts within a day of each peak; the rest of the time (say, a weekend) a new window starts as soon as the last one ends.
 - `claude-warmup config peak off` turns it off.
 
 ### Menu bar / tmux

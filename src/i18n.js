@@ -28,7 +28,7 @@ Examples
   claude-warmup install
   claude-warmup config hours 06:00-23:00
   claude-warmup config days weekdays
-  claude-warmup config peak 14:00`,
+  claude-warmup config peak 11:30 weekdays`,
 
   usageHeader: 'Usage',
   usageLive: 'checked {time} · claude /usage',
@@ -46,7 +46,7 @@ Examples
   lblLastPing: 'Last ping',
   lblPeak: 'Peak time',
   peakOff: 'off',
-  peakRow: '{peak} · pings only at {slots}, so a window resets right at {peak}',
+  peakRow: '{peak} · pings lined up at {slots}',
   lblNextPing: 'Next ping',
   svcOn: 'on ({backend}, checks every {n} min)',
   svcBroken: 'installed but not running: run claude-warmup install again',
@@ -131,8 +131,9 @@ Examples
   configDesc_interval: 'minutes between background checks, 1-60 (run install again to apply)',
   configDesc_claudePath: 'path to the claude CLI (auto = detect)',
   configDesc_lang: 'output language: auto | en | ko',
-  configDesc_peak: 'off | HH:MM: your busiest time; windows line up so one resets right then (e.g. 14:00)',
-  configPeakOn: 'Pings now go out only at {slots}, so a window resets right at {peak}.',
+  configDesc_peak: 'off | HH:MM [days]: your busiest time; windows line up so one resets right then (e.g. 14:00, 11:30 weekdays)',
+  configPeakOn: 'Pings now line up at {slots}, so a window resets right at {peak}.',
+  configPeakDays: 'Far from a peak day, a new window starts as soon as the last one ends.',
   configPeakNote: 'If you start a window yourself at another time, it cannot be moved; things line up again after it ends.',
   configPeakOff: 'Peak time off: a new window starts as soon as the last one ends.',
   configUnknownKey: 'Unknown setting "{key}". Settings: {keys}',
@@ -223,7 +224,7 @@ const ko = {
   claude-warmup install
   claude-warmup config hours 06:00-23:00
   claude-warmup config days weekdays
-  claude-warmup config peak 14:00`,
+  claude-warmup config peak 11:30 weekdays`,
 
   usageHeader: '사용량',
   usageLive: '{time} 확인 · claude /usage',
@@ -240,7 +241,7 @@ const ko = {
   lblSchedule: '스케줄',
   lblPeak: '피크 시간',
   peakOff: '끔',
-  peakRow: '{peak} · {slots}에만 핑을 보내서 {peak}에 창이 딱 리셋되게 맞춰요',
+  peakRow: '{peak} · {slots}에 맞춰 핑',
   lblLastPing: '마지막 핑',
   lblNextPing: '다음 핑',
   svcOn: '켜짐 ({backend}, {n}분마다 확인)',
@@ -326,8 +327,9 @@ const ko = {
   configDesc_interval: '백그라운드 확인 주기(분), 1-60 (적용하려면 install 다시 실행)',
   configDesc_claudePath: 'claude CLI 경로 (auto = 자동 탐지)',
   configDesc_lang: '출력 언어: auto | en | ko',
-  configDesc_peak: 'off | HH:MM: 가장 바쁜 시각. 이때 창이 딱 리셋되게 맞춰요 (예: 14:00)',
-  configPeakOn: '이제 {slots}에만 핑을 보내서, {peak}에 창이 딱 리셋되게 맞춰요.',
+  configDesc_peak: 'off | HH:MM [요일]: 가장 바쁜 시각. 이때 창이 딱 리셋되게 맞춰요 (예: 14:00, 11:30 weekdays)',
+  configPeakOn: '이제 {slots}에 맞춰 핑을 보내서, {peak}에 창이 딱 리셋되게 해요.',
+  configPeakDays: '피크가 없는 날에는 지금처럼 창이 끝나면 바로 새 창을 열어요.',
   configPeakNote: '내가 다른 시각에 직접 창을 시작했다면 그 창은 옮길 수 없어요. 그 창이 끝난 뒤 다시 맞춰요.',
   configPeakOff: '피크 시간을 껐어요. 창이 끝나면 바로 새 창을 열어요.',
   configUnknownKey: '알 수 없는 설정 "{key}". 가능한 설정: {keys}',

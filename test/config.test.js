@@ -70,3 +70,11 @@ test('peak: off or HH:MM', () => {
   assert.equal(validateConfigValue('peak', '25:00').ok, false);
   assert.equal(validateConfigValue('peak', 'noon').ok, false);
 });
+
+test('peak with days', () => {
+  assert.deepEqual(validateConfigValue('peak', '11:30 weekdays'), { ok: true, value: '11:30 weekdays' });
+  assert.deepEqual(validateConfigValue('peak', '평일 11:30'), { ok: true, value: '11:30 weekdays' });
+  assert.deepEqual(validateConfigValue('peak', '14:00 mon,wed'), { ok: true, value: '14:00 mon,wed' });
+  assert.deepEqual(validateConfigValue('peak', '14:00 everyday'), { ok: true, value: '14:00' });
+  assert.equal(validateConfigValue('peak', '14:00 someday').ok, false);
+});
