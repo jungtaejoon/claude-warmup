@@ -183,12 +183,11 @@ export async function runTick({ paths, config, now = Date.now(), waitLockMs = 0 
     let decision = decideWithUsage({ now: checkedAt, usage });
     const peak = getPeak(config);
     if (decision.action === 'ping' && peak && peak.gap !== null) {
-      // Peak mode: start a window only at a slot that lines the resets up with the peak.
+      // Peak mode: rest before the chosen gap ends, then start the window that ends at the peak.
       const gate = peakGate({ now: checkedAt, peak, earlyMs: config.interval * MINUTE });
-      if (gate.ok && gate.free) { /* no peak soon (e.g. a weekend): chain windows as usual */ }
-      else decision = gate.ok
-        ? { action: 'ping', reason: 'peak_slot', peakAt: gate.peakAt }
-        : { action: 'skip', reason: 'peak_wait', until: gate.until, peakAt: gate.peakAt };
+      if (!gate.ok) decision = { action: 'skip', reason: 'peak_wait', until: gate.until, peakAt: gate.peakAt };
+      else if (gate.aligned) decision = { action: 'ping', reason: 'peak_slot', peakAt: gate.peakAt };
+      // otherwise: chain windows as usual
     }
     appendLog(paths, {
       ev: 'check',

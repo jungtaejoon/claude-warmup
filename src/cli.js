@@ -124,23 +124,12 @@ export function describePeak(config) {
   return p.days.size === 7 ? hm : `${describeDays(formatDays(p.days))} ${hm}`;
 }
 
-/** Times of day (inside the schedule's hours) when peak mode may start a window: peak − 5h·k. */
-export function peakSlotTimes(config) {
+/** The daily rest for the chosen gap, as times of day: no new window from `from` until `to` (the gap's end). */
+export function restRange(config) {
   const peak = getPeak(config);
-  if (!peak) return [];
-  const hours = parseHours(config.hours) || { always: true };
-  const out = [];
-  const gap = peak.gap ?? 0;
-  // window starts: from the peak forward until the gap, then back from the next peak
-  const offsets = [];
-  for (let j = 0; j < gap; j++) offsets.push(j * 300);
-  for (let k = 1; k <= 4 - gap; k++) offsets.push(-k * 300);
-  for (const off of offsets) {
-    const m = (((peak.min + off) % 1440) + 1440) % 1440;
-    const d = new Date(2026, 0, 5, Math.floor(m / 60), m % 60);
-    if (isScheduledAt(d.getTime(), { hours, days: new Set([0, 1, 2, 3, 4, 5, 6]) })) out.push(m);
-  }
-  return out.sort((a, b) => a - b).map(formatHM);
+  if (!peak || peak.gap === null) return null;
+  const to = (((peak.min + (peak.gap - 4) * 300) % 1440) + 1440) % 1440;
+  return { from: formatHM((to - 300 + 1440) % 1440), to: formatHM(to) };
 }
 
 /** "02:30–06:30" for each place the gap can go, or for the chosen one. */
@@ -157,7 +146,7 @@ function peakRows(config) {
   if (!peak) return [];
   if (peak.gap === null) return [[t('lblPeak'), t('peakNeedsGap', { peak: describePeak(config) })]];
   return [
-    [t('lblPeak'), t('peakRow', { peak: describePeak(config), slots: peakSlotTimes(config).join(', ') })],
+    [t('lblPeak'), t('peakRow', { peak: describePeak(config), ...restRange(config) })],
     [t('lblGap'), gapRanges(config, true)[0]],
   ];
 }
@@ -213,7 +202,7 @@ export function computeNext({ now, config, state, svc, session }) {
     const slot = nextPeakSlot(base, peak, getSchedule(config), { earlyMs: config.interval * MINUTE });
     if (!slot) return { kind: 'never' };
     if (slot.at <= now + MINUTE) return { kind: 'soon', within: config.interval };
-    if (slot.free) return windowEnd && slot.at <= base + MINUTE
+    if (!slot.aligned) return windowEnd && slot.at <= base + MINUTE
       ? { kind: 'afterWindow', at: windowEnd, within: config.interval }
       : { kind: 'scheduleStart', at: slot.at };
     return { kind: 'peakSlot', at: slot.at, peakAt: slot.peakAt };
@@ -551,7 +540,7 @@ async function promptGap({ paths, config, opts }) {
 function printPeakSummary(config) {
   const peak = getPeak(config);
   console.log(fmt.ok(t('configGapOn', { gap: gapRanges(config, true)[0] })));
-  console.log(`  ${t('configPeakOn', { slots: peakSlotTimes(config).join(', ') || '—', peak: describePeak(config) })}`);
+  console.log(`  ${t('configPeakOn', { peak: describePeak(config), ...restRange(config) })}`);
   if (peak.days.size < 7) console.log(fmt.color.dim(`  ${t('configPeakDays')}`));
   console.log(fmt.color.dim(`  ${t('configPeakNote')}`));
 }

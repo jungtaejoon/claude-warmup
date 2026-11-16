@@ -166,25 +166,28 @@ test('state survives a corrupt file', (t) => {
   assert.deepEqual(loadState(box.paths), { a: 1 });
 });
 
-test('peak time: off-slot -> waits instead of pinging, and the wait is free', async (t) => {
+const minsNow = (offsetMin) => {
   const now = Date.now();
-  const peak = formatHM((Math.round((now - new Date(now).setHours(0, 0, 0, 0)) / 60e3) + 150) % 1440); // 2.5h away
-  const box = sandbox('idle', { peak, gap: peak }); // gap right after the peak: slots at peak − 5h·k
+  return formatHM((((Math.round((now - new Date(now).setHours(0, 0, 0, 0)) / 60e3) + offsetMin) % 1440) + 1440) % 1440);
+};
+// With gap choice 4 (m = 3) the gap ends 5h before the peak and the rest is the 5h before that.
+
+test('peak time: inside the rest -> waits, and the wait is free', async (t) => {
+  // peak 7h away -> gap ends in 2h -> now is in the rest
+  const box = sandbox('idle', { peak: minsNow(420), gap: minsNow(420 + 900 + 60) });
   t.after(() => box.cleanup());
   const r = await runTick({ paths: box.paths, config: box.config });
   assert.equal(r.action, 'skip');
   assert.equal(r.reason, 'peak_wait');
   assert.equal(box.pings().length, 0);
-  assert.ok(loadState(box.paths).peakWaitUntil > Date.now() + 2 * HOUR);
+  assert.ok(loadState(box.paths).peakWaitUntil > Date.now() + HOUR);
   const callsBefore = box.calls().length;
   assert.equal((await runTick({ paths: box.paths, config: box.config })).reason, 'peak_wait');
   assert.equal(box.calls().length, callsBefore);
 });
 
-test('peak time: at a slot -> pings so the window ends at the peak', async (t) => {
-  const now = Date.now();
-  const peak = formatHM((Math.round((now - new Date(now).setHours(0, 0, 0, 0)) / 60e3) + 300) % 1440); // 5h away
-  const box = sandbox('idle', { peak, gap: peak }); // gap right after the peak: slots at peak − 5h·k
+test('peak time: at the gap end -> pings so the window ends at the peak', async (t) => {
+  const box = sandbox('idle', { peak: minsNow(300), gap: minsNow(300 + 900 + 60) });
   t.after(() => box.cleanup());
   const r = await runTick({ paths: box.paths, config: box.config });
   assert.equal(r.action, 'ping');
@@ -192,10 +195,16 @@ test('peak time: at a slot -> pings so the window ends at the peak', async (t) =
   assert.equal(loadState(box.paths).peakWaitUntil, null);
 });
 
+test('peak time: outside the rest -> chains as usual', async (t) => {
+  const box = sandbox('idle', { peak: minsNow(720), gap: minsNow(720 + 900 + 60) }); // rest starts in 2h
+  t.after(() => box.cleanup());
+  const r = await runTick({ paths: box.paths, config: box.config });
+  assert.equal(r.action, 'ping');
+  assert.equal(r.reason, 'no_active_window');
+});
+
 test('peak time without a gap is not applied yet -> usual ping', async (t) => {
-  const now = Date.now();
-  const peak = formatHM((Math.round((now - new Date(now).setHours(0, 0, 0, 0)) / 60e3) + 150) % 1440);
-  const box = sandbox('idle', { peak });
+  const box = sandbox('idle', { peak: minsNow(150) });
   t.after(() => box.cleanup());
   const r = await runTick({ paths: box.paths, config: box.config });
   assert.equal(r.action, 'ping');

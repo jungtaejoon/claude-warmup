@@ -10,7 +10,7 @@ It also shows your current session and weekly usage, with reset times.
 
 ```
 $ claude-warmup
-Claude Warmup v0.3.0
+Claude Warmup v0.3.1
 
 Usage  checked 08:42 · claude /usage
   Current session (5h)  █████░░░░░░░░░░░░░░░  23%  resets 11:00 (in 2h 17m)
@@ -152,8 +152,8 @@ $ claude-warmup config peak 11:30 weekdays      # or just 14:00 for every day
 
 **Why a gap?** A day is 24 hours and a window is 5, so four windows fill 20 hours and 4 hours are left with no window. Lining windows up with the peak can't hide that, so you choose where the empty hours go. Setting a peak lists the five choices and asks for a number; picking 4 above leaves 02:30–06:30 empty, and windows then run 06:30–11:30–16:30–21:30–02:30. Until you choose, the peak is not applied. Choose or change it later with `claude-warmup config gap` (asks again), `config gap 4`, or a time inside it like `config gap 03:00`.
 
-- Pings go out only at those window starts (inside your `hours`). Off them it waits rather than open a window that would end at the wrong time. Waiting costs nothing.
-- If you start a window yourself at another time, it can't be moved. When it ends, claude-warmup waits for the next aligned time and lines up again.
+- Windows keep chaining all day as usual. The only rest is the 5 hours before the gap ends (here 01:30–06:30): a window started then would run past 06:30, so none starts. At 06:30 a window starts that ends right at the peak.
+- If your own use throws the timing off (say you start a window at 02:00), windows keep chaining and line up again at the next gap's end. The rest costs nothing: no Claude call until it's over.
 - Days are optional: `11:30 weekdays`, `mon,wed,fri`, `mon-fri`. Aligning starts within a day of each peak; the rest of the time (say, a weekend) a new window starts as soon as the last one ends.
 - `claude-warmup config peak off` turns it off.
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs, computeNext, describeSchedule, rowLabel, peakSlotTimes, gapRanges } from '../src/cli.js';
+import { parseArgs, computeNext, describeSchedule, rowLabel, restRange, gapRanges } from '../src/cli.js';
 import { MESSAGES, setLang, detectLang, t } from '../src/i18n.js';
 import { strWidth, fmtDuration, shortModel, pad } from '../src/format.js';
 import { DEFAULTS } from '../src/config.js';
@@ -111,21 +111,21 @@ test('the CLI runs end to end against the fake claude', (t) => {
   assert.equal(run('nope').status, 2);
 });
 
-test('peakSlotTimes lists the aligned ping times inside the hours', () => {
-  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '14:00', gap: '14:00' }), ['04:00', '09:00', '18:00', '23:00']);
-  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '14:00', gap: '14:00', hours: '06:00-23:00' }), ['09:00', '18:00']);
-  assert.deepEqual(peakSlotTimes({ ...DEFAULTS, peak: '' }), []);
+test('restRange: no new window in the 5 hours before the gap ends', () => {
+  assert.deepEqual(restRange({ ...DEFAULTS, peak: '11:30 weekdays', gap: '03:00' }), { from: '01:30', to: '06:30' });
+  assert.deepEqual(restRange({ ...DEFAULTS, peak: '14:00', gap: '14:00' }), { from: '13:00', to: '18:00' });
+  assert.equal(restRange({ ...DEFAULTS, peak: '14:00' }), null);
 });
 
-test('computeNext with a peak time points at the next aligned slot', () => {
-  const now = new Date(2026, 10, 9, 10, 30).getTime();
+test('computeNext with a peak: inside the rest, the next ping is at the gap end', () => {
   const svc = { active: true };
-  const next = computeNext({ now, config: { ...DEFAULTS, peak: '14:00', gap: '14:00' }, state: {}, svc, session: { active: false } });
-  assert.equal(next.kind, 'peakSlot');
-  assert.equal(next.at, new Date(2026, 10, 9, 18, 0).getTime() - 5 * 60e3);
-  // a window you started yourself until 12:00 -> still the 18:00 slot (12:00 is off-slot)
-  const busy = computeNext({ now, config: { ...DEFAULTS, peak: '14:00', gap: '14:00' }, state: {}, svc, session: { active: true, resetsAt: new Date(2026, 10, 9, 12, 0).getTime() } });
-  assert.equal(busy.at, next.at);
+  const cfg = { ...DEFAULTS, peak: '11:30 weekdays', gap: '03:00' };
+  const night = computeNext({ now: new Date(2026, 10, 9, 2, 0).getTime(), config: cfg, state: {}, svc, session: { active: false } });
+  assert.equal(night.kind, 'peakSlot');
+  assert.equal(night.at, new Date(2026, 10, 9, 6, 25).getTime());
+  // a window you started yourself until 08:00 -> chain right after it (no waiting for a slot)
+  const busy = computeNext({ now: new Date(2026, 10, 9, 7, 0).getTime(), config: cfg, state: {}, svc, session: { active: true, resetsAt: new Date(2026, 10, 9, 8, 0).getTime() } });
+  assert.equal(busy.kind, 'afterWindow');
 });
 
 test('computeNext: weekday peak on a Saturday -> usual next ping', () => {
@@ -138,7 +138,6 @@ test('a gap time picks where the 4 empty hours go', () => {
   const cfg = { ...DEFAULTS, peak: '11:30 weekdays', gap: '03:00' };
   assert.deepEqual(gapRanges(cfg), ['11:30–15:30', '16:30–20:30', '21:30–01:30', '02:30–06:30', '07:30–11:30']);
   assert.deepEqual(gapRanges(cfg, true), ['02:30–06:30']);
-  assert.deepEqual(peakSlotTimes(cfg), ['06:30', '11:30', '16:30', '21:30']);
   // without a gap, the peak waits to be applied
   const next = computeNext({ now: new Date(2026, 10, 9, 10, 30).getTime(), config: { ...DEFAULTS, peak: '14:00' }, state: {}, svc: { active: true }, session: { active: false } });
   assert.equal(next.kind, 'soon');
@@ -160,7 +159,7 @@ test('config peak lists numbered gap choices; config gap <n> picks one', (t) => 
   const gap = run('config', 'gap', '4');
   assert.equal(gap.status, 0);
   assert.match(gap.stdout, /Empty hours \(no window\): 02:30–06:30/);
-  assert.match(gap.stdout, /06:30, 11:30, 16:30, 21:30/);
+  assert.match(gap.stdout, /From 01:30 to 06:30 no new one starts/);
   assert.match(run('config', 'gap').stdout, /4\) 02:30–06:30 {2}← current/);
 
   // a new peak whose choices don't hold the old gap -> asked again
