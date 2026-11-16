@@ -104,5 +104,5 @@ test('nextPeakSlot skips the rest and the schedule', () => {
 
 test('precheck: a peak wait costs no network call', () => {
   const r = precheck({ now, schedule: always, state: { peakWaitUntil: now + HOUR } });
-  assert.deepEqual(r, { action: 'skip', reason: 'peak_wait', until: now + HOUR });
+  assert.deepEqual(r, { action: 'skip', reason: 'peak_wait', until: now + HOUR, peakAt: null });
 });

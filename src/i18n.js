@@ -121,6 +121,7 @@ Examples
   tickBlocked: 'usage limit reached, paused until {when}',
   tickNoSessionLimit: 'your plan reports no 5-hour session limit, nothing to do',
   tickLocked: 'another check is running',
+  tickPeakRest: 'resting before the gap ends; the next window starts at {when}',
   tickPeakWait: 'resting before the gap ends; a window starts at {when} so it resets at {peak}',
 
   configHeader: 'Settings ({file})',
@@ -327,6 +328,7 @@ const ko = {
   tickError: '오류: {reason}',
   tickWindowActive: '이미 {when}까지 활성 세션이 있어요. 끝나면 바로 핑을 보내요',
   tickOutside: '스케줄 시간이 아니라서 지금은 할 일이 없어요',
+  tickPeakRest: '빈 시간이 끝날 때까지 쉬어요. {when}에 다음 창을 열어요',
   tickPeakWait: '빈 시간이 끝날 때까지 쉬어요. {when}에 창을 열어 {peak}에 리셋되게 해요',
   tickBackoff: '오류 후 대기 중, {when} 이후 재시도',
   tickBlocked: '사용 한도 도달, {when}까지 대기',

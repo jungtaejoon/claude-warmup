@@ -166,7 +166,9 @@ function describeTick(r, now = Date.now()) {
     case 'recheck_later':
     case 'no_session_limit': return t('tickNoSessionLimit');
     case 'locked': return t('tickLocked');
-    case 'peak_wait': return t('tickPeakWait', { when: fmt.fmtWhen(r.until, now), peak: fmt.fmtWhen(r.peakAt, now) });
+    case 'peak_wait': return r.peakAt
+      ? t('tickPeakWait', { when: fmt.fmtWhen(r.until, now), peak: fmt.fmtWhen(r.peakAt, now) })
+      : t('tickPeakRest', { when: fmt.fmtWhen(r.until, now) });
     default: return String(r.reason);
   }
 }
@@ -445,6 +447,7 @@ async function cmdInstall({ paths, config, opts }) {
     try {
       const state = loadState(paths);
       state.service = { backend: used, nodePath, scriptPath, version: VERSION, installedAt: Date.now() };
+      state.peakWaitUntil = null; // a wait worked out by an older version must not hold back this one
       saveState(paths, state);
     } finally {
       releaseLock(paths.lockFile);

@@ -198,7 +198,10 @@ export async function runTick({ paths, config, now = Date.now(), waitLockMs = 0 
     });
     if (decision.action === 'skip') {
       if (decision.reason === 'no_session_limit') state.recheckAt = decision.until;
-      if (decision.reason === 'peak_wait') state.peakWaitUntil = decision.until;
+      if (decision.reason === 'peak_wait') {
+        state.peakWaitUntil = decision.until;
+        state.peakWaitPeakAt = decision.peakAt;
+      }
       saveState(paths, state);
       return decision;
     }

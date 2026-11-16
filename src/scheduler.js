@@ -16,7 +16,9 @@ export function precheck({ now, schedule, state }) {
   if (state.backoffUntil && state.backoffUntil > now) return { action: 'skip', reason: 'backoff', until: state.backoffUntil };
   if (state.blockedUntil && state.blockedUntil > now) return { action: 'skip', reason: 'limit_reached', until: state.blockedUntil };
   if (state.recheckAt && state.recheckAt > now) return { action: 'skip', reason: 'recheck_later', until: state.recheckAt };
-  if (state.peakWaitUntil && state.peakWaitUntil > now) return { action: 'skip', reason: 'peak_wait', until: state.peakWaitUntil };
+  if (state.peakWaitUntil && state.peakWaitUntil > now) {
+    return { action: 'skip', reason: 'peak_wait', until: state.peakWaitUntil, peakAt: state.peakWaitPeakAt ?? null };
+  }
   if (state.windowEndsAt && state.windowEndsAt + RESET_MARGIN_MS > now) {
     return { action: 'skip', reason: 'window_active', until: state.windowEndsAt };
   }
