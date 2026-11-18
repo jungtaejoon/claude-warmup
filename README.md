@@ -156,6 +156,7 @@ $ claude-warmup config peak 11:30 weekdays      # or just 14:00 for every day
 - If your own use throws the timing off (say you start a window at 02:00), windows keep chaining and line up again at the next gap's end. The rest costs nothing: no Claude call until it's over.
 - Days are optional: `11:30 weekdays`, `mon,wed,fri`, `mon-fri`. Aligning starts within a day of each peak; the rest of the time (say, a weekend) a new window starts as soon as the last one ends.
 - `claude-warmup config peak off` turns it off.
+- Other Claude use on your account, including background tasks that finish overnight, can still move a day's reset. See [Limits](#limits-what-it-cant-control).
 
 ### Menu bar / tmux
 
@@ -185,6 +186,18 @@ The script installs whatever is missing into `~/.local` (Node.js, the Claude Cod
 - **After you log out:** the script turns on `loginctl enable-linger`, so the timer keeps running after you disconnect.
 - **Oracle Cloud's free tier:** Oracle may reclaim Always Free instances that stay idle for a week, and a warm-up server is idle nearly all the time. Upgrading the account to Pay As You Go is the usual way to avoid that, and Always Free resources stay free of charge.
 - **Your own computer:** you can leave claude-warmup installed there too, since both read the same account usage, or turn it off with `claude-warmup uninstall`.
+
+## Limits: what it can't control
+
+claude-warmup can only start a window when none is open. It can't stop, move or end a window, so anything else that uses Claude on your account can throw the timing off:
+
+- **The window belongs to your account, not to this machine.** A message from claude.ai, the desktop or mobile app, Claude Code, another computer, or a cloud agent starts a window if none is open. Whatever starts it, that window runs its full 5 hours.
+- **Background work counts too.** A long task in Claude Code (a build, an analysis, a subagent) that finishes overnight wakes Claude to report back, and that reply opens a window. If it lands in your gap, that day's peak reset moves. Example: a job finished at 05:46, Claude replied, and the reset came at 10:40 instead of 11:30.
+- **It lines up again by itself.** After such a window ends, windows keep chaining, and the next gap's end puts the peak back on time, usually the next day.
+- **With a peak time, 4 hours a day have no window** (the gap you chose). A message you send during the gap starts a full 5-hour window.
+- **To keep a peak reliable,** avoid Claude use in the 5 hours before your gap ends: tell long-running sessions to wait instead of replying when a job finishes, run long jobs outside Claude (for example with `nohup`), or pick a gap at a time when nothing runs.
+- **It can't raise your limits** or touch the weekly limit. It only changes when the 5-hour resets happen.
+- **It depends on Claude's current rules.** If Anthropic changes how windows work or what `claude /usage` prints, timings may be off until claude-warmup is updated.
 
 ## Good to know
 

@@ -173,6 +173,7 @@ Claude Warmup v0.3.1
     <h2>자주 묻는 질문</h2>
     <details open><summary>Claude 5시간 사용량 한도는 언제 리셋되나요?</summary><p>창의 첫 메시지로부터 5시간 뒤예요. 그 첫 메시지가 내가 9시에 보낸 것이면 14시에 리셋돼요. claude-warmup을 쓰면 시작할 때 이미 창이 흐르고 있어서 리셋이 더 빨리 와요. 자세한 내용은 <a href="claude-usage-limit-reset/">Claude 사용량 한도 리셋 가이드</a>에 있어요.</p></details>
     <details><summary>가장 바쁜 시간에 맞춰 리셋되게 할 수 있나요?</summary><p>네. <code>claude-warmup config peak 11:30 weekdays</code>로 정하면 평일 11:30에 창이 딱 리셋되게 맞춰요. 하루는 24시간이고 창은 5시간이라 하루에 4시간은 창이 없는데, 그 위치는 <code>config gap 03:00</code>처럼 직접 정해요(이 경우 02:30–06:30). 그러면 창이 06:30–11:30–16:30–21:30–02:30로 이어져요. 내가 다른 시각에 직접 시작한 창은 옮길 수 없고, 끝난 뒤 다시 맞춰요.</p></details>
+    <details><summary>무엇이 시각을 어긋나게 하나요?</summary><p>계정에서 일어나는 다른 Claude 사용이에요. 5시간 창은 계정에 붙어 있어서 claude.ai, 앱, Claude Code, 다른 컴퓨터, 끝나면서 Claude를 깨우는 백그라운드 작업 등 어디서든 메시지가 가면 열린 창이 없을 때 새 창이 시작되고, 그 창은 5시간을 다 채워요. claude-warmup은 창이 없을 때 여는 것만 할 수 있고, 창을 옮기거나 끝낼 수는 없어요. 그 뒤로도 창은 계속 이어지고 다음 빈 시간에 다시 맞춰져요(보통 다음 날). 실제 예: 긴 작업이 05:46에 끝나 Claude가 응답했고, 리셋이 11:30이 아니라 10:40이 됐어요. <a href="https://github.com/jungtaejoon/claude-warmup/blob/main/README.ko.md#한계-할-수-없는-것">한계 전체 보기</a></p></details>
     <details><summary>사용량이 늘어나나요?</summary><p>아니요. 한도는 같아요. 5시간을 꽉 채워 기다릴 일이 드물어질 뿐이에요.</p></details>
     <details><summary>워밍업은 사용량을 얼마나 쓰나요?</summary><p>거의 안 써요. 확인은 로컬 <code>/usage</code> 명령(토큰 0)이고, 핑은 창마다 haiku 짧은 메시지 하나예요.</p></details>
     <details><summary>컴퓨터를 꺼 둬도 되나요?</summary><p>네, 서버에서 돌리면 됩니다. <a href="#server">무료 서버에서 돌리기</a>를 보세요.</p></details>
