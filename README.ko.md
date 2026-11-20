@@ -165,6 +165,8 @@ $ claude-warmup config peak 11:30 weekdays      # 요일 없이 14:00이면 매�
 
 ## 서버에서 돌리기
 
+> **컴퓨터 없이 가장 쉽게:** 터미널이 낯설다면 [GitHub Actions 설치 도우미](https://jungtaejoon.github.io/claude-warmup/ko/github-actions/)를 쓰세요. 피크 시각을 고르면 내 비공개 저장소에 넣을 워크플로 파일과 바로 가는 링크를 만들어 줘요(무료, 설치 없음). GitHub 예약 실행이 몇 분 늦을 수 있어 아래 방법보다 덜 정확해요.
+
 claude-warmup은 설치된 컴퓨터가 켜져 있을 때만 핑을 보낼 수 있습니다. 컴퓨터를 하루 종일 켜 둘 수 없다면 항상 켜져 있는 작은 Linux 서버에 설치하세요. 무료 클라우드 서버(Oracle Cloud의 Always Free 등), 저렴한 VPS, 64비트 OS를 쓰는 라즈베리파이 모두 됩니다. 사용 창은 계정 단위라서 어느 기기에서 핑을 보내든 똑같이 동작합니다.
 
 1. Linux 서버를 만들고 SSH로 접속합니다. Ubuntu 22.04/24.04, Debian 12, Oracle Linux 8/9 모두 되고, 메모리는 1GB면 충분합니다.

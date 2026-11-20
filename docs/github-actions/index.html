@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Line up Claude's 5-hour window without a computer: GitHub Actions setup helper | claude-warmup</title>
+<meta name="description" content="No computer left on: GitHub sends Claude a tiny hello at set times every day, so your 5-hour usage window resets right at your busiest hour. Pick your peak time and get the workflow file and direct links. Free.">
+<link rel="canonical" href="https://jungtaejoon.github.io/claude-warmup/github-actions/">
+<link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/github-actions/">
+<link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/github-actions/">
+<link rel="alternate" hreflang="x-default" href="https://jungtaejoon.github.io/claude-warmup/github-actions/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Line up Claude's 5-hour window with your peak, no computer needed">
+<meta property="og:description" content="GitHub wakes Claude for you at set times. Pick your peak and get the file and links.">
+<meta property="og:url" content="https://jungtaejoon.github.io/claude-warmup/github-actions/">
+<meta property="og:image" content="https://jungtaejoon.github.io/claude-warmup/og.png">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#c2562f">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../gh.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="../">claude<span>-</span>warmup</a>
+    <nav class="top">
+      <a class="hide-sm" href="../">Install (your computer)</a>
+      <a class="hide-sm" href="../claude-usage-limit-reset/">Reset guide</a>
+      <a href="../ko/github-actions/" hreflang="ko" lang="ko">한국어</a>
+      <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <h1>No computer needed: make Claude's 5-hour window reset at your busiest hour</h1>
+    <p class="lead">Every day at set times, GitHub sends a tiny "hi" from your own Claude account, so the 5-hour window <strong>resets right at your peak</strong>. Nothing has to stay on, and it's free. Pick your times below and you get the file and direct links you need.</p>
+    <div class="warnbox">You paste two commands into a terminal once (step 3). After that there is nothing to do. It takes about 10 minutes.</div>
+  </div>
+
+  <section id="plan">
+    <h2>1. Pick when you want the reset</h2>
+    <div class="form">
+      <label>Your busiest time (resets here)<input id="peak" type="time" value="14:00" step="300"></label>
+      <label>4 hours to leave without a window<select id="gap"></select></label>
+      <label>Warmup days<select id="days"></select></label>
+    </div>
+    <div class="track big" id="tl" aria-hidden="true"></div>
+    <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+    <p id="tlSummary"></p>
+    <p class="note">Time zone: <span id="tzName"></span> · A day has 24 hours and a window lasts 5, so four chained windows leave 4 hours over. You choose where those 4 hours go; while you sleep is usually best.</p>
+    <details><summary>Skip some warmups</summary><p class="note">Untick a time and no hello is sent then (that window starts with your own first message).</p><div id="pingList"></div></details>
+  </section>
+
+  <section id="setup">
+    <h2>2. Follow along</h2>
+    <div class="form">
+      <label>Your GitHub username<input id="user" autocomplete="username" placeholder="e.g. octocat" spellcheck="false"></label>
+      <label>Repository to create<input id="repo" value="claude-warmup-runner" spellcheck="false"></label>
+    </div>
+    <p class="note" id="userNote"></p>
+    <ol class="steps">
+      <li>
+        <h3>Get a GitHub account</h3>
+        <p>No account yet? Make one free at <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>, then type your username above.</p>
+      </li>
+      <li>
+        <h3>Create a private repository</h3>
+        <p>The button opens GitHub with the name and "Private" filled in. Turn on <b>Add README</b>, then click <b>Create repository</b>.</p>
+        <p><a class="btn primary" data-link="newRepo" target="_blank" rel="noopener">Open "new repository" ↗</a></p>
+      </li>
+      <li>
+        <h3>Make a Claude token (once)</h3>
+        <p>The official Claude Code program makes a "key for automation" for your account. The key goes <b>only into your own GitHub repository</b>; this site never sees it.</p>
+        <div class="tabs" role="tablist"><button data-os="mac" aria-selected="true">Mac / Linux</button><button data-os="win" aria-selected="false">Windows</button></div>
+        <div data-ospane="mac">
+          <ol>
+            <li>Open Terminal (on a Mac: <kbd>⌘</kbd>+<kbd>Space</kbd>, type "Terminal").</li>
+            <li>Paste this and press Enter (installs Claude Code; skip if you have it):
+              <div class="cmd"><code id="c1">curl -fsSL https://claude.ai/install.sh | bash</code><button data-copy="#c1">Copy</button></div></li>
+            <li>Close and reopen the terminal, then paste this and press Enter:
+              <div class="cmd"><code id="c2">claude setup-token</code><button data-copy="#c2">Copy</button></div></li>
+          </ol>
+        </div>
+        <div data-ospane="win" hidden>
+          <ol>
+            <li>Open "PowerShell" from the Start menu.</li>
+            <li>Paste this and press Enter (installs Claude Code; skip if you have it):
+              <div class="cmd"><code id="c3">irm https://claude.ai/install.ps1 | iex</code><button data-copy="#c3">Copy</button></div></li>
+            <li>Close and reopen PowerShell, then paste this and press Enter:
+              <div class="cmd"><code id="c4">claude setup-token</code><button data-copy="#c4">Copy</button></div></li>
+          </ol>
+        </div>
+        <p>A browser opens: sign in with your Claude (Pro/Max) account and allow it. The terminal then prints a long string starting with <code>sk-ant-oat01-</code>. That is the token; copy all of it. It lasts about a year.</p>
+      </li>
+      <li>
+        <h3>Put the token in a repository secret</h3>
+        <p>The button opens "New secret". Paste the name below into <b>Name</b>, the token into <b>Secret</b>, and click <b>Add secret</b>.</p>
+        <div class="cmd"><code id="c5">CLAUDE_CODE_OAUTH_TOKEN</code><button data-copy="#c5">Copy</button></div>
+        <p><a class="btn primary" data-link="secret" target="_blank" rel="noopener">Open "new secret" ↗</a></p>
+      </li>
+      <li>
+        <h3>Create the warmup file</h3>
+        <p>The button opens GitHub with the file already filled in with your times. Click <b>Commit changes…</b> at the top right, then <b>Commit changes</b> again. Done.</p>
+        <p><a class="btn primary" data-link="file" target="_blank" rel="noopener">Open "new file" ↗</a></p>
+        <details class="yamlbox"><summary>If the editor is empty: copy the file yourself</summary>
+          <p class="note">Type <code>.github/workflows/claude-warmup.yml</code> as the file name and paste this.</p>
+          <button class="copybtn" data-copy="#yaml">Copy file</button>
+          <pre class="yaml" id="yaml"></pre>
+        </details>
+      </li>
+      <li>
+        <h3>Run it once to check</h3>
+        <p>Click the button, then <b>Run workflow</b> → the green <b>Run workflow</b>. After about a minute a green ✓ means it works. Open the run to see "Warmup sent" and the expected reset time.</p>
+        <p><a class="btn primary" data-link="run" target="_blank" rel="noopener">Open the workflow ↗</a></p>
+        <p class="note">A run now opens a window right away. If that throws today's peak off, it lines up again by itself when the next gap ends.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section id="faq">
+    <h2>Good to know</h2>
+    <details><summary>How do I change the peak later?</summary><p>Pick again on this page, click "Copy file", and replace the whole file in <a data-link="edit" target="_blank" rel="noopener">your repository's warmup file editor</a>, then commit.</p></details>
+    <details><summary>Will it reset exactly at the peak?</summary><p>GitHub's scheduled runs can start a few minutes late, sometimes 15+ minutes at busy times. Runs are scheduled 3 minutes early, but the reset can still slip by that much. For minute-level accuracy, <a href="../">claude-warmup on your own computer</a> is more precise.</p></details>
+    <details><summary>The peak keeps drifting</summary><p>If you use Claude (on any device) in the 5 hours before the gap ends, your message opens the window first and that day's reset moves. Avoid Claude in that stretch; if it drifts, it lines up again the next day.</p></details>
+    <details><summary>Does it cost anything? How much usage?</summary><p>Private repositories get 2,000 free GitHub Actions minutes a month; this is 4 runs a day × about a minute, roughly 120 minutes a month. On Claude's side it's one short haiku hello per window, so the effect on your usage is tiny.</p></details>
+    <details><summary>Is the token safe?</summary><p>It's stored only as a secret in your private repository, and GitHub masks it in logs. This page sends nothing anywhere (your username is used in your browser only, to build links). It is still a token living outside your computer; if you'd rather not, use the <a href="../">local version</a>.</p></details>
+    <details><summary>What when the token expires?</summary><p>After about a year runs fail with a red ✗. Make a new token (step 3) and replace the secret with the same name (step 4).</p></details>
+    <details><summary>How do I stop it?</summary><p>Disable the workflow in the repository's Actions tab, or delete the repository.</p></details>
+    <details><summary>Is this allowed?</summary><p>It uses Claude Code's official <code>setup-token</code> (made for automation) so a job in your own repository sends a tiny request from your own account. No one else's account is involved or shared. Read <a href="https://www.anthropic.com/legal/consumer-terms">Anthropic's terms</a> and decide for yourself.</p></details>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>An unofficial open-source project, not affiliated with Anthropic. "Claude" is a trademark of Anthropic. MIT License · <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a> · <a href="https://jungtaejoon.github.io/blog/en/">Blog</a> · <a href="../ko/github-actions/" hreflang="ko" lang="ko">한국어</a></p>
+  </div>
+</footer>
+<script src="../gh.js" defer></script>
+</body>
+</html>

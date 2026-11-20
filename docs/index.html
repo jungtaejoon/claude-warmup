@@ -67,6 +67,7 @@
       <a class="hide-sm" href="#how">How it works</a>
       <a class="hide-sm" href="#install">Install</a>
       <a class="hide-sm" href="claude-usage-limit-reset/">Reset guide</a>
+      <a class="hide-sm" href="github-actions/">No computer</a>
       <a href="ko/" hreflang="ko" lang="ko">한국어</a>
       <a class="hide-sm" href="https://jungtaejoon.github.io/blog/en/">Blog</a>
       <a href="https://github.com/jungtaejoon/claude-warmup">GitHub</a>
@@ -163,6 +164,9 @@ Auto warm-up
     <p>Choose the hours to keep windows running, for example from early morning to late night:</p>
     <div class="copy"><pre><code>claude-warmup config hours 06:00-23:00</code></pre><button type="button">Copy</button></div>
 
+    <h3 id="github-actions">Easiest: no computer, with GitHub Actions</h3>
+    <p>Not comfortable with terminals, or can't keep a computer on? Let GitHub wake Claude for you at set times. The <a href="github-actions/"><strong>setup helper</strong></a> turns your peak time into the file and direct links you need; it takes about 10 minutes and is free. GitHub runs can start a few minutes late, so it is less precise than this tool.</p>
+
     <h3 id="server">Run it on a free server</h3>
     <p>Computer not on all day? Put it on any always-on Linux machine: a free cloud VM such as Oracle Cloud Always Free, a cheap VPS or a Raspberry Pi. The window belongs to your account, so any machine can send the ping.</p>
     <div class="copy"><pre><code>curl -fsSLO https://raw.githubusercontent.com/jungtaejoon/claude-warmup/main/scripts/server-setup.sh && bash server-setup.sh --timezone America/New_York</code></pre><button type="button">Copy</button></div>
@@ -176,7 +180,7 @@ Auto warm-up
     <details><summary>What can throw the timing off?</summary><p>Any other Claude use on your account. The 5-hour window belongs to the account, so a message from claude.ai, the apps, Claude Code, another computer, or a background task that finishes and wakes Claude starts a window if none is open, and it runs its full 5 hours. claude-warmup can only open a window when none is open; it can't move or end one. Windows keep chaining after that and line up again at the next gap, usually the next day. Example: a long job finished at 05:46, Claude replied, and the reset came at 10:40 instead of 11:30. <a href="https://github.com/jungtaejoon/claude-warmup#limits-what-it-cant-control">All limits</a></p></details>
     <details><summary>Does this give me more Claude usage?</summary><p>No. Same limits. You just rarely wait the full 5 hours.</p></details>
     <details><summary>How much usage does the warm-up cost?</summary><p>Almost none. Checks use the local <code>/usage</code> command (0 tokens). The ping is one short haiku message per window.</p></details>
-    <details><summary>Can I run it while my computer is off?</summary><p>Yes, on a server. See <a href="#server">Run it on a free server</a>.</p></details>
+    <details><summary>Can I run it while my computer is off?</summary><p>Yes. The easiest way is the <a href="github-actions/">GitHub Actions setup helper</a> (nothing to install); for more precision see <a href="#server">Run it on a free server</a>.</p></details>
     <details><summary>Does it read my Claude password or token?</summary><p>No. The official <code>claude</code> CLI handles all sign-in.</p></details>
     <details><summary>Is this allowed?</summary><p>It is a tiny request made with your own account through the official Claude Code CLI. Read <a href="https://www.anthropic.com/legal/consumer-terms">Anthropic's terms</a> and decide for yourself.</p></details>
   </section>

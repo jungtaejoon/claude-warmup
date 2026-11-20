@@ -165,6 +165,8 @@ Use it in [SwiftBar](https://github.com/swiftbar/SwiftBar) or a tmux status line
 
 ## Run it on a server
 
+> **Easiest, no computer:** not at home in a terminal? Use the [GitHub Actions setup helper](https://jungtaejoon.github.io/claude-warmup/github-actions/). Pick your peak time and it builds the workflow file for your own private repository plus direct links (free, nothing to install). GitHub's scheduled runs can start a few minutes late, so it is less precise than the options below.
+
 Pings only go out while the computer running claude-warmup is on. If yours isn't on all day, put claude-warmup on a small always-on Linux machine instead: a free cloud VM (Oracle Cloud's Always Free tier works), a cheap VPS, or a Raspberry Pi with a 64-bit OS. The usage window belongs to your account, so it does not matter which machine sends the ping.
 
 1. Create a Linux server and connect to it with SSH. Ubuntu 22.04/24.04, Debian 12 and Oracle Linux 8/9 all work, and 1 GB of memory is plenty.

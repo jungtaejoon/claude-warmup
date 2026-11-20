@@ -24,4 +24,16 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/claude-usage-limit-reset/"/>
     <xhtml:link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/claude-usage-limit-reset/"/>
   </url>
+  <url>
+    <loc>https://jungtaejoon.github.io/claude-warmup/github-actions/</loc>
+    <lastmod>2026-11-20</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/github-actions/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/github-actions/"/>
+  </url>
+  <url>
+    <loc>https://jungtaejoon.github.io/claude-warmup/ko/github-actions/</loc>
+    <lastmod>2026-11-20</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jungtaejoon.github.io/claude-warmup/github-actions/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://jungtaejoon.github.io/claude-warmup/ko/github-actions/"/>
+  </url>
 </urlset>
