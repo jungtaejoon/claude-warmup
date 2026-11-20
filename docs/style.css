@@ -124,3 +124,4 @@ article.guide li { margin: 6px 0; }
   .hero { padding-top: 40px; }
   .term { font-size: 12px; padding: 14px; }
 }
+nav.top a[aria-current="page"] { color: var(--text); font-weight: 600; }
