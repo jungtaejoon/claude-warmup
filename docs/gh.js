@@ -22,7 +22,6 @@
     sent: '워밍업 보냄', newWin: '새 5시간 창이 시작됐다면 리셋은 약', already: '(이미 열린 창이 있었다면 그 창의 리셋 시각이 그대로예요)',
     noSecret: 'CLAUDE_CODE_OAUTH_TOKEN 비밀값이 없어요. 저장소 Settings → Secrets and variables → Actions 에서 넣어 주세요.',
     fail: 'Claude가 답하지 않았어요. 토큰이 만료됐거나 잘못 들어갔을 수 있어요.',
-    usage: '사용량 (/usage)',
   } : {
     gapOpt: (o, i) => `${i + 1}) ${hm(o.start)}–${hm(o.end)} ${['(right after the peak)', '', '', '', '(right before the peak)'][i]}`,
     win: 'window', gap: 'gap', peak: 'peak',
@@ -36,7 +35,6 @@
     sent: 'Warmup sent', newWin: 'If this started a new 5-hour window, it resets at about', already: '(if a window was already open, its reset time stays the same)',
     noSecret: 'The CLAUDE_CODE_OAUTH_TOKEN secret is missing. Add it in the repository: Settings → Secrets and variables → Actions.',
     fail: 'Claude did not answer. The token may have expired or been pasted wrong.',
-    usage: 'Usage (/usage)',
   };
 
   const gapOptions = (peak) => [0, 1, 2, 3, 4].map((m) => ({ m, start: (peak + m * WIN) % DAY, end: (peak + m * WIN + GAP) % DAY }));
@@ -96,18 +94,6 @@ jobs:
           {
             echo "### ✅ $sent ${T.sent}"
             echo "${T.newWin} **$reset** ${T.already}"
-          } >> "$GITHUB_STEP_SUMMARY"
-      - name: Usage (best effort)
-        continue-on-error: true
-        run: |
-          u=$(timeout 60 claude -p "/usage" 2>&1 | head -40) || true
-          {
-            echo "<details><summary>${T.usage}</summary>"
-            echo
-            echo '\`\`\`'
-            echo "$u"
-            echo '\`\`\`'
-            echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
 `;
   }
